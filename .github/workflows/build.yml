@@ -13,7 +13,7 @@ jobs:
       - name: 1. Checkout repository
         uses: actions/checkout@v4
 
-      - name: 2. Extract ZIP and DELETE old white UI screens
+      - name: 2. Extract ZIP and remove old UI screens
         run: |
           for z in *.zip; do
             if [ -f "$z" ]; then
@@ -26,8 +26,6 @@ jobs:
           fi
           rm -rf .kotlin
           find . -name "*.salive" -type f -delete
-
-          # ESKI OQ EKRANLI BARCHA KOTLIN FAYLLARINI BUTUNLAY O'CHIRISH:
           rm -rf app/src/main/java/uz/metro/chilonzor/dcxduty/ui
           rm -rf app/src/main/java/uz/metro/chilonzor/dcxduty/data
           rm -rf app/src/main/java/uz/metro/chilonzor/dcxduty/domain
@@ -42,110 +40,17 @@ jobs:
           elif [ -f "index.html" ]; then
             cp index.html app/src/main/assets/index.html
           else
-            echo "XATOLIK: index1.html fayli repozitoriyga yuklanmagan!"
+            echo "index1.html bulunamadi!"
             exit 1
           fi
-
-          # index1.html ichidagi media-guard blokini olib tashlash va net()/forceSync() ni ulash
-          python3 - << ' PYEOF'
-          p = "app/src/main/assets/index.html"
-          with open(p, "r", encoding="utf-8") as f:
-              html = f.read()
-
-          import re
-          html = re.sub(r'<script data-tmly-media-guard="1">.*?</script>', '', html, flags=re.S)
-
-          patch = """<script>
-          function net(on){
-            var e=document.getElementById("net");
-            if(!e)return;
-            var ok=on&&navigator.onLine!==false;
-            e.className="net-bar "+(ok?"net-online":"net-offline");
-            e.textContent=ok?"🟢 ОНЛАЙН":"🔴 ОФФЛАЙН — НЕТ СВЯЗИ С СЕРВЕРОМ";
-          }
-          async function forceSync(){
-            if(typeof toast==="function")toast("☁️ Синхронизация…");
-            if(typeof flush==="function")await flush();
-            if(typeof connect==="function")await connect();
-            if(typeof syncClock==="function")await syncClock();
-            if(typeof toast==="function")toast("✅ Синхронизировано");
-          }
-          window.addEventListener("online",function(){net(true);if(typeof poll==="function")poll();});
-          window.addEventListener("offline",function(){net(false);if(typeof beep==="function")beep(300,0.5);});
-          """
-          html = html.replace("<script>", patch, 1)
-          with open(p, "w", encoding="utf-8") as f:
-              f.write(html)
-          PYEOF
+          python3 -c 'import pathlib,re; p=pathlib.Path("app/src/main/assets/index.html"); s=p.read_text("utf-8"); s=re.sub(r"<script data-tmly-media-guard=\"1\">.*?</script>","",s,flags=re.S); patch="<script>\nfunction net(on){var e=document.getElementById(\"net\");if(!e)return;var ok=on&&navigator.onLine!==false;e.className=\"net-bar \"+(ok?\"net-online\":\"net-offline\");e.textContent=ok?\"🟢 ОНЛАЙН\":\"🔴 ОФФЛАЙН — НЕТ СВЯЗИ С СЕРВЕРОМ\";}\nasync function forceSync(){if(typeof toast===\"function\")toast(\"☁️ Синхронизация…\");if(typeof flush===\"function\")await flush();if(typeof connect===\"function\")await connect();if(typeof syncClock===\"function\")await syncClock();if(typeof toast===\"function\")toast(\"✅ Синхронизировано\");}\nwindow.addEventListener(\"online\",function(){net(true);if(typeof poll===\"function\")poll();});\nwindow.addEventListener(\"offline\",function(){net(false);if(typeof beep===\"function\")beep(300,0.5);});\nwindow.print=function(){if(window.AndroidBridge)window.AndroidBridge.printPage(\"Chilanzar_Prikaz\");};\n"; s=s.replace("<script>",patch,1); s=s.replace("a.click();","if(window.AndroidBridge){window.AndroidBridge.saveCsv(a.download,csv);toast(\"📥 Сохранено в Загрузки: \"+a.download);}else{a.click();}"); p.write_text(s,"utf-8")'
 
       - name: 4. Write Clean DcxApp and MainActivity
         run: |
-          cat << 'EOF' > app/src/main/java/uz/metro/chilonzor/dcxduty/DcxApp.kt
-          package uz.metro.chilonzor.dcxduty
-          import android.app.Application
-          class DcxApp : Application()
-          EOF
+          python3 -c 'import pathlib; pathlib.Path("app/src/main/java/uz/metro/chilonzor/dcxduty/DcxApp.kt").write_text("package uz.metro.chilonzor.dcxduty\nimport android.app.Application\nclass DcxApp : Application()\n","utf-8")'
+          python3 -c 'import pathlib; code="package uz.metro.chilonzor.dcxduty\n\nimport android.annotation.SuppressLint\nimport android.content.ContentValues\nimport android.content.Context\nimport android.graphics.Color\nimport android.os.Build\nimport android.os.Bundle\nimport android.os.Environment\nimport android.print.PrintAttributes\nimport android.print.PrintManager\nimport android.provider.MediaStore\nimport android.view.View\nimport android.view.WindowManager\nimport android.webkit.JavascriptInterface\nimport android.webkit.WebChromeClient\nimport android.webkit.WebSettings\nimport android.webkit.WebView\nimport android.webkit.WebViewClient\nimport androidx.activity.ComponentActivity\nimport androidx.activity.OnBackPressedCallback\nimport java.io.File\n\nclass MainActivity : ComponentActivity() {\n    private lateinit var webView: WebView\n\n    @SuppressLint(\"SetJavaScriptEnabled\")\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)\n        window.statusBarColor = Color.parseColor(\"#0f172a\")\n        window.navigationBarColor = Color.parseColor(\"#020617\")\n\n        webView = WebView(this).apply {\n            setBackgroundColor(Color.parseColor(\"#0f172a\"))\n            setLayerType(View.LAYER_TYPE_HARDWARE, null)\n            settings.apply {\n                javaScriptEnabled = true\n                domStorageEnabled = true\n                databaseEnabled = true\n                allowFileAccess = true\n                allowContentAccess = true\n                @Suppress(\"DEPRECATION\")\n                allowUniversalAccessFromFileURLs = true\n                @Suppress(\"DEPRECATION\")\n                allowFileAccessFromFileURLs = true\n                mediaPlaybackRequiresUserGesture = false\n                cacheMode = WebSettings.LOAD_DEFAULT\n                mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW\n                setSupportZoom(false)\n            }\n            webViewClient = WebViewClient()\n            webChromeClient = WebChromeClient()\n            addJavascriptInterface(AndroidBridge(), \"AndroidBridge\")\n            loadUrl(\"file:///android_asset/index.html\")\n        }\n\n        setContentView(webView)\n\n        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {\n            override fun handleOnBackPressed() {\n                if (webView.canGoBack()) webView.goBack()\n            }\n        })\n    }\n\n    inner class AndroidBridge {\n        @JavascriptInterface\n        fun printPage(jobName: String) {\n            runOnUiThread {\n                val pm = getSystemService(Context.PRINT_SERVICE) as? PrintManager ?: return@runOnUiThread\n                val adapter = webView.createPrintDocumentAdapter(jobName)\n                pm.print(jobName, adapter, PrintAttributes.Builder().build())\n            }\n        }\n\n        @JavascriptInterface\n        fun saveCsv(fileName: String, content: String) {\n            try {\n                val bytes = content.toByteArray(Charsets.UTF_8)\n                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {\n                    val values = ContentValues().apply {\n                        put(MediaStore.Downloads.DISPLAY_NAME, fileName)\n                        put(MediaStore.Downloads.MIME_TYPE, \"text/csv\")\n                        put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)\n                    }\n                    val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)\n                    if (uri != null) {\n                        contentResolver.openOutputStream(uri)?.use { it.write(bytes) }\n                    }\n                } else {\n                    @Suppress(\"DEPRECATION\")\n                    val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)\n                    File(dir, fileName).writeBytes(bytes)\n                }\n            } catch (_: Exception) {}\n        }\n    }\n}\n"; pathlib.Path("app/src/main/java/uz/metro/chilonzor/dcxduty/MainActivity.kt").write_text(code,"utf-8")'
 
-          cat << 'EOF' > app/src/main/java/uz/metro/chilonzor/dcxduty/MainActivity.kt
-          package uz.metro.chilonzor.dcxduty
-
-          import android.annotation.SuppressLint
-          import android.graphics.Color
-          import android.os.Bundle
-          import android.view.View
-          import android.view.WindowManager
-          import android.webkit.WebChromeClient
-          import android.webkit.WebSettings
-          import android.webkit.WebView
-          import android.webkit.WebViewClient
-          import androidx.activity.ComponentActivity
-          import androidx.activity.OnBackPressedCallback
-
-          class MainActivity : ComponentActivity() {
-              private lateinit var webView: WebView
-
-              @SuppressLint("SetJavaScriptEnabled")
-              override fun onCreate(savedInstanceState: Bundle?) {
-                  super.onCreate(savedInstanceState)
-                  window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                  window.statusBarColor = Color.parseColor("#0f172a")
-                  window.navigationBarColor = Color.parseColor("#020617")
-
-                  webView = WebView(this).apply {
-                      setBackgroundColor(Color.parseColor("#0f172a"))
-                      setLayerType(View.LAYER_TYPE_HARDWARE, null)
-                      settings.apply {
-                          javaScriptEnabled = true
-                          domStorageEnabled = true
-                          databaseEnabled = true
-                          allowFileAccess = true
-                          allowContentAccess = true
-                          @Suppress("DEPRECATION")
-                          allowUniversalAccessFromFileURLs = true
-                          @Suppress("DEPRECATION")
-                          allowFileAccessFromFileURLs = true
-                          mediaPlaybackRequiresUserGesture = false
-                          cacheMode = WebSettings.LOAD_DEFAULT
-                          mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                          setSupportZoom(false)
-                      }
-                      webViewClient = WebViewClient()
-                      webChromeClient = WebChromeClient()
-                      loadUrl("file:///android_asset/index.html")
-                  }
-
-                  setContentView(webView)
-
-                  onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-                      override fun handleOnBackPressed() {
-                          if (webView.canGoBack()) webView.goBack()
-                      }
-                  })
-              }
-          }
-          EOF
-
-      - name: 5. Set up JDK 17 & Build APK
+      - name: 5. Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
