@@ -13,15 +13,1218 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Extract ZIP if uploaded as archive
+      - name: Extract base Android project from ZIP
         run: |
-          if [ -f "dcx-android-fixed.zip" ]; then
-            unzip -q -o dcx-android-fixed.zip
-          fi
+          for z in *.zip; do
+            if [ -f "$z" ]; then
+              unzip -q -o "$z"
+            fi
+          done
           if [ -d "dcx-android" ]; then
-            cp -r dcx-android/* .
-            rm -rf dcx-android/.kotlin
+            cp -rf dcx-android/. .
+            rm -rf dcx-android
           fi
+          rm -rf .kotlin
+          find . -name "*.salive" -type f -delete
+
+      - name: Inject 1-to-1 index1.html into Android Assets
+        run: |
+          mkdir -p app/src/main/assets
+          cat << 'EOF_INDEX_HTML' > app/src/main/assets/index.html
+          <!DOCTYPE html>
+          <html lang="ru">
+          <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+          <title>АРМ ДЦХ — Чиланзарская линия (v8)</title>
+          <style>
+          :root{--gs:rgba(255,255,255,.78);--gss:rgba(255,255,255,.9);--gd:rgba(15,23,42,.78);--gb:rgba(255,255,255,.45);--primary:#2563eb;--success:#16a34a;--warning:#d97706;--danger:#dc2626;--purple:#7c3aed;--teal:#0d9488;--sb:#1e3a8a;--muted:#475569;--rx:26px;--rl:20px;--rm:14px;--rp:50px}
+          *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+          body{background:radial-gradient(circle at 15% 20%,#1e3a8a 0,#0f172a 45%,#020617 100%) fixed;color:#0f172a;min-height:100vh;padding-bottom:60px}
+          .hidden{display:none!important}
+          :focus-visible{outline:3px solid #facc15;outline-offset:2px}
+          .net-bar{padding:7px 16px;text-align:center;font-weight:800;font-size:13px;color:#fff;transition:.3s}
+          .net-online{background:rgba(22,163,74,.85)}
+          .net-offline{background:rgba(220,38,38,.95);font-size:15px;padding:12px;animation:op 1.2s infinite}
+          @keyframes op{50%{background:rgba(127,29,29,.98)}}
+          @media(prefers-reduced-motion:reduce){.net-offline{animation:none}}
+          #toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(15,23,42,.92);color:#fff;padding:13px 26px;border-radius:var(--rp);font-weight:700;font-size:15px;box-shadow:0 14px 36px rgba(0,0,0,.45);max-width:92%;text-align:center;pointer-events:none}
+          #modal,#confirm{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9998;display:flex;align-items:center;justify-content:center;padding:18px}
+          .login-wrap{min-height:calc(100vh - 34px);display:flex;align-items:center;justify-content:center;padding:18px}
+          .login-glass,.glass{background:var(--gs);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--gb);border-radius:var(--rx);box-shadow:0 12px 32px rgba(0,0,0,.18)}
+          .login-glass{width:100%;max-width:460px;padding:30px 26px;box-shadow:0 25px 55px rgba(0,0,0,.45)}
+          .glass{padding:20px;margin-bottom:16px}
+          .login-glass h2{text-align:center;font-size:23px;font-weight:900;margin-bottom:4px}
+          .sub{text-align:center;font-size:13px;color:var(--muted);margin-bottom:18px;font-weight:600}
+          .switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:rgba(15,23,42,.08);padding:5px;border-radius:var(--rp);margin-bottom:16px}
+          .grp{padding:10px 12px;border:none;border-radius:var(--rp);font-weight:800;font-size:14px;cursor:pointer;background:transparent;color:#334155}
+          .grp.active{background:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.35)}
+          .topbar{background:var(--gd);backdrop-filter:blur(22px);color:#fff;padding:13px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(255,255,255,.14)}
+          .pill{padding:6px 14px;border-radius:var(--rp);font-size:12px;font-weight:800;background:var(--primary);color:#fff;display:inline-block}
+          .p-founder{background:var(--purple)}.p-chief{background:#eab308;color:#000}.p-station{background:var(--teal)}
+          .container{max-width:1060px;margin:18px auto;padding:0 14px}
+          .nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+          .nav-pill{padding:10px 20px;border-radius:var(--rp);border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.14);color:#fff;font-weight:800;font-size:14px;cursor:pointer}
+          .nav-pill.active{background:#fff;color:#0f172a}
+          .cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-bottom:16px}
+          .cat{padding:14px 16px;border-radius:var(--rl);cursor:pointer;font-weight:800;font-size:14px;border:2px solid transparent;background:rgba(255,255,255,.75)}
+          .cat.active{border-color:#0f172a;background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+          .c-blue{border-left:6px solid #2563eb}.c-green{border-left:6px solid #16a34a}.c-amber{border-left:6px solid #d97706}.c-red{border-left:6px solid #dc2626}.c-purple{border-left:6px solid #7c3aed}.c-teal{border-left:6px solid #0d9488}
+          .field{margin-bottom:13px}
+          .field label,.lbl{display:block;font-size:13px;font-weight:800;margin-bottom:5px;color:#1e293b}
+          input,select{width:100%;padding:11px 14px;font-size:15px;font-weight:700;border:1.5px solid rgba(148,163,184,.45);border-radius:var(--rm);background:rgba(255,255,255,.88);color:#0f172a}
+          input:focus,select:focus{border-color:var(--primary);background:#fff}
+          input.err,select.err{border-color:var(--danger);background:#fef2f2}
+          ::placeholder{color:#94a3b8;font-weight:600;opacity:1}
+          .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+          @media(max-width:720px){.g2,.g3,.g4{grid-template-columns:1fr}}
+          .btn{padding:11px 18px;border:none;border-radius:var(--rp);font-size:14px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;color:#fff}
+          .btn:active{transform:scale(.97)}
+          .btn-primary{background:var(--primary)}.btn-success{background:var(--success)}.btn-warning{background:var(--warning)}.btn-danger{background:var(--danger)}.btn-purple{background:var(--purple)}
+          .btn-soft{background:rgba(226,232,240,.9);color:#0f172a}
+          .btn-block{width:100%;padding:14px;font-size:16px}
+          .btn-sm{padding:7px 14px;font-size:13px}
+          .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+          .chip{padding:7px 14px;border-radius:var(--rp);background:rgba(226,232,240,.85);font-weight:700;font-size:13px;cursor:pointer;border:2px solid transparent}
+          .chip.active{background:#dbeafe;border-color:var(--primary);color:#1e3a8a;font-weight:800}
+          .stamp{display:grid;grid-template-columns:148px 1fr;gap:12px;background:var(--gss);border-radius:var(--rl);padding:14px;border:1px solid rgba(148,163,184,.4)}
+          @media(max-width:600px){.stamp{grid-template-columns:118px 1fr;padding:10px;gap:8px}}
+          .sl{border-right:2.5px solid var(--sb);padding-right:10px;display:flex;flex-direction:column;font-size:15px;font-weight:800}
+          .slt{display:grid;grid-template-columns:1fr 1fr;border-bottom:2.5px solid var(--sb);text-align:center}
+          .cdate{padding:6px 2px}.cnum{border-left:2.5px solid var(--sb);padding:6px 2px;font-weight:900;color:var(--danger)}
+          .times{padding-top:8px;display:flex;flex-direction:column;gap:5px}
+          .trow{font-size:15px;font-weight:800;line-height:1.35;padding:3px 0;border-bottom:1px dashed rgba(148,163,184,.4)}
+          .trow small{display:block;font-size:12px;font-weight:700;color:#1e3a8a}
+          .sr{border:2.5px solid var(--sb);border-radius:12px;padding:14px 16px;color:var(--sb);font-size:16px;line-height:1.75;background:rgba(248,250,252,.92)}
+          .stop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;border-bottom:1px dashed rgba(30,58,138,.35);padding-bottom:6px;margin-bottom:8px}
+          .big{font-weight:900;font-size:17px}
+          .v{font-weight:900;font-size:16px;color:#0f172a;background:#fef08a;padding:2px 8px;border-radius:6px;display:inline-block;margin:1px 2px}
+          .strike{text-decoration:line-through;text-decoration-color:var(--danger);text-decoration-thickness:2.5px;opacity:.55}
+          .alert{margin-top:12px;background:rgba(254,226,226,.92);border:2px solid var(--danger);padding:12px;border-radius:var(--rm);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+          .ctrl{margin-top:12px;background:rgba(241,245,249,.9);padding:12px;border-radius:var(--rm)}
+          .row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+          .foot{margin-top:12px;padding-top:10px;border-top:1px solid rgba(148,163,184,.3)}
+          table{width:100%;border-collapse:collapse;font-size:13px}
+          th,td{padding:10px 12px;border-bottom:1px solid rgba(148,163,184,.3);text-align:left}
+          th{background:rgba(241,245,249,.85);font-weight:800}
+          .muted{font-size:13px;color:var(--muted)}
+          .st{display:inline-block;padding:4px 12px;border-radius:var(--rp);font-size:11px;font-weight:900;letter-spacing:.3px;white-space:nowrap}
+          .st-draft{background:#e2e8f0;color:#334155}
+          .st-pending{background:#fef3c7;color:#92400e}
+          .st-issued{background:#dbeafe;color:#1e40af}
+          .st-journal{background:#dcfce7;color:#166534}
+          .st-canceled{background:#fee2e2;color:#991b1b}
+          .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+          .stat{background:rgba(255,255,255,.9);border-radius:var(--rl);padding:14px 16px;border-left:6px solid var(--primary)}
+          .stat b{display:block;font-size:26px;font-weight:900;color:#0f172a}
+          .stat span{font-size:12px;font-weight:800;color:var(--muted)}
+          @media print{body *{visibility:hidden}.pt,.pt *{visibility:visible}.pt{position:absolute;left:0;top:0;width:100%;border:none!important;background:#fff!important;box-shadow:none}.pt .ctrl,.pt .foot,.pt .alert{display:none!important}}
+          .cx{position:relative}.cx::after{content:"ОТМЕНЁН";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:900;color:rgba(220,38,38,.55);transform:rotate(-8deg);pointer-events:none}
+          .danger-box{background:#fef2f2;border:2px solid var(--danger);border-radius:var(--rm);padding:14px;margin-bottom:14px}
+          .danger-box h4{color:#991b1b;font-size:16px;margin-bottom:8px}
+          .danger-box p{font-size:13px;color:#7f1d1d;font-weight:700;line-height:1.5}
+          .chk{display:flex;align-items:flex-start;gap:10px;margin-top:12px;font-size:14px;font-weight:800;color:#7f1d1d;cursor:pointer}
+          .chk input{width:22px;height:22px;flex-shrink:0;margin-top:1px}
+          </style>
+          </head>
+          <body>
+          <div id="net" class="net-bar net-online" role="status">🟢 ОНЛАЙН</div>
+          <div id="toast" class="hidden" role="alert"></div>
+
+          <div id="modal" class="hidden"><div class="login-glass" style="max-width:380px">
+            <h3 id="m-title" style="margin-bottom:12px"></h3><input id="m-inp" type="text">
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px"><button type="button" class="btn btn-soft" id="m-no">Отмена</button><button type="button" class="btn btn-primary" id="m-ok">Сохранить</button></div>
+          </div></div>
+
+          <div id="confirm" class="hidden"><div class="login-glass" style="max-width:440px">
+            <h3 id="c-title" style="margin-bottom:10px;color:#991b1b"></h3>
+            <div id="c-body"></div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap"><button type="button" class="btn btn-soft" id="c-no">Отмена</button><button type="button" class="btn btn-danger" id="c-ok" disabled>Подтвердить</button></div>
+          </div></div>
+
+          <div id="view-login" class="login-wrap"><div class="login-glass">
+            <h2>ЧИЛАНЗАРСКАЯ ЛИНИЯ</h2><p class="sub">Вход в начале смены. Повторно пароль не запрашивается до выхода.</p>
+            <div id="login-err" class="hidden" role="alert" style="background:#fee2e2;color:#991b1b;padding:11px;border-radius:14px;font-weight:800;font-size:13px;margin-bottom:14px;text-align:center"></div>
+            <div class="field"><label for="inp-login">Электронная почта:</label><input id="inp-login" type="email" autocomplete="username" placeholder="ivanov@example.com"></div>
+            <div class="field"><label for="inp-pass">Пароль:</label><input id="inp-pass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+            <button type="button" class="btn btn-primary btn-block" onclick="doLogin()">Войти</button>
+            <button type="button" class="btn btn-soft btn-block" style="margin-top:10px" onclick="resetPass()">Забыли пароль?</button>
+          </div></div>
+
+          <div id="view-app" class="hidden">
+          <header class="topbar">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:18px;font-weight:900">🚇 ЧИЛАНЗАРСКАЯ ЛИНИЯ</span><span id="role-pill" class="pill"></span></div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span id="user-name" style="font-size:14px;font-weight:700"></span><button type="button" id="btn-logout" class="btn btn-danger btn-sm" style="position:relative;z-index:200" onclick="doLogout()" title="Выйти из системы">Выйти</button></div>
+          </header>
+          <div class="container">
+            <div id="shift-banner" class="glass hidden" style="background:rgba(254,243,199,.92);border:2px solid #f59e0b"><div class="row">
+              <div><b style="color:#92400e;font-size:15px">⏰ Время пересменки (08:00 / 20:00)</b><p style="font-size:13px;color:#78350f">Подтвердите фамилию дежурного на новую смену или оформите приказ приёма дежурства.</p></div>
+              <button type="button" class="btn btn-warning" onclick="openBuilder('SHIFT_HANDOVER')">🔄 Оформить приём смены</button></div></div>
+
+            <div class="nav">
+              <button type="button" id="nav-journal" class="nav-pill active" onclick="openTab('journal')">📖 Журнал приказов</button>
+              <button type="button" id="nav-drafts" class="nav-pill hidden" onclick="openTab('drafts')">📁 Заготовки (<span id="drafts-cnt">0</span>)</button>
+              <button type="button" id="nav-reports" class="nav-pill hidden" onclick="openTab('reports')">📊 Отчёты</button>
+              <button type="button" id="nav-logs" class="nav-pill hidden" onclick="openTab('logs')">📜 Логи</button>
+              <button type="button" id="nav-admin" class="nav-pill hidden" onclick="openTab('admin')">🛠 Управление</button>
+            </div>
+
+            <div class="glass row">
+              <div>
+                <div id="shift-window" style="font-size:12px;font-weight:800;color:var(--muted)"></div>
+                <div id="active-dch" style="font-size:18px;font-weight:900;margin-top:3px"></div>
+                <div id="my-duty" style="font-size:13px;font-weight:800;color:var(--teal);margin-top:2px"></div>
+                <div id="next-num" style="font-size:14px;font-weight:800;color:var(--primary);margin-top:2px"></div>
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <button type="button" id="btn-shift" class="btn btn-soft hidden" onclick="openBuilder('SHIFT_HANDOVER')">🔄 Приём дежурства</button>
+                <button type="button" id="btn-new" class="btn btn-primary hidden" onclick="openBuilder('HOZ_WRONG_DIR')">➕ Выдать приказ / заготовка</button>
+              </div>
+            </div>
+
+            <div id="box-builder" class="glass hidden" style="border:2px solid var(--primary)">
+              <div class="row" style="margin-bottom:14px"><h3 style="color:var(--sb);font-size:19px">Раздел приказа</h3><span id="builder-pill" class="pill"></span></div>
+              <input type="hidden" id="edit-id">
+              <div class="cat-grid">
+                <div id="cat-SHIFT_HANDOVER" class="cat c-teal" onclick="selectCat('SHIFT_HANDOVER')">🔄 Приём и сдача дежурства</div>
+                <div id="cat-HOZ_WRONG_DIR" class="cat c-purple" onclick="selectCat('HOZ_WRONG_DIR')">🚜 Хоз. поезд в неправильном направлении</div>
+                <div id="cat-AB_TO_ALS" class="cat c-green" onclick="selectCat('AB_TO_ALS')">🟢 Переход с АБ на АЛС-АРС</div>
+                <div id="cat-ALS_TO_AB" class="cat c-amber" onclick="selectCat('ALS_TO_AB')">🟡 Переход с АЛС-АРС на АБ</div>
+                <div id="cat-ENERGY_DCH" class="cat c-amber" onclick="selectCat('ENERGY_DCH')">⚡ Энергодиспетчеру (ЭЧЦ)</div>
+                <div id="cat-VOLTAGE_OFF" class="cat c-red" onclick="selectCat('VOLTAGE_OFF')">🔌 О снятии напряжения</div>
+                <div id="cat-TRACK_CLOSE" class="cat c-blue" onclick="selectCat('TRACK_CLOSE')">🚧 О закрытии пути (перегона)</div>
+              </div>
+              <div id="danger-warn" class="danger-box hidden">
+                <h4>⚠️ ОПАСНАЯ ОПЕРАЦИЯ</h4>
+                <p id="danger-text"></p>
+              </div>
+              <div class="g3">
+                <div class="field" style="grid-column:span 2"><label for="b-subtemplate">Вид штампа:</label><select id="b-subtemplate" onchange="preview()"></select></div>
+                <div class="field"><label for="b-time">Время выдачи:</label><input type="time" id="b-time" oninput="preview()"><div id="floor-hint" style="font-size:11px;color:var(--danger);font-weight:800;margin-top:3px"></div></div>
+              </div>
+              <div id="b-stations-section">
+                <div class="g3">
+                  <div class="field"><label for="b-from-st">От станции:</label><select id="b-from-st" onchange="onRange()"></select></div>
+                  <div class="field"><label for="b-to-st">До станции:</label><select id="b-to-st" onchange="onRange()"></select></div>
+                  <div class="field" style="display:flex;align-items:flex-end"><button type="button" class="btn btn-warning" style="width:100%" onclick="allStations()">📢 Всем станциям</button></div>
+                </div>
+                <div class="field"><label>Станции, которым поступит приказ:</label><div id="chips" class="chips"></div></div>
+              </div>
+              <div id="fields-SH" class="g2 hidden">
+                <div class="field"><label for="sh-accepted">Дежурство принял(а) ДЦХ:</label><input id="sh-accepted" oninput="preview()"></div>
+                <div class="field"><label for="sh-handed">Дежурство сдал(а) ДЦХ:</label><input id="sh-handed" oninput="preview()"></div>
+              </div>
+              <div id="fields-HOZ" class="hidden">
+                <div class="g3">
+                  <div class="field"><label for="hoz-train">Хозяйственный поезд №:</label><input id="hoz-train" value="11236" inputmode="numeric" oninput="preview()"></div>
+                  <div class="field"><label for="hoz-tr1">По какому главному пути:</label><select id="hoz-tr1" onchange="$('hoz-tr2').value=this.value;preview()"><option value="II">по II главному пути</option><option value="I">по I главному пути</option></select></div>
+                  <div class="field"><label for="hoz-tr2">На какой главный путь:</label><select id="hoz-tr2" onchange="preview()"><option value="II">на II главный путь</option><option value="I">на I главный путь</option></select></div>
+                </div>
+                <div class="g3">
+                  <div class="field"><label for="hoz-dep-type">Отправление:</label><select id="hoz-dep-type" onchange="preview()"><option value="station">со станции</option><option value="peregon">с перегона</option></select></div>
+                  <div class="field" id="w-dep-st"><label for="hoz-dep-station">Станция отправления:</label><select id="hoz-dep-station" onchange="preview()"></select></div>
+                  <div class="field hidden" id="w-dep-per"><label for="hoz-dep-peregon">Перегон отправления:</label><select id="hoz-dep-peregon" onchange="onPeregon()"></select></div>
+                  <div class="field"><label for="hoz-dest-station">Станция назначения:</label><select id="hoz-dest-station" onchange="preview()"></select></div>
+                </div>
+                <div class="g3">
+                  <div class="field"><label for="hoz-lim-mode">Граница («до / за»):</label><select id="hoz-lim-mode" onchange="preview()"><option value="do">до</option><option value="za">за</option><option value="none">Зачеркнуть оба</option></select></div>
+                  <div class="field" id="w-lim"><label for="hoz-lim-txt">Ориентир (светофор):</label><input id="hoz-lim-txt" value='светофора "В"' oninput="preview()"></div>
+                  <div class="field"><label for="hoz-oth-mode">Другой хоз. поезд:</label><select id="hoz-oth-mode" onchange="preview()"><option value="none">Нет</option><option value="ahead">Впереди Вас</option><option value="behind">За Вами</option></select></div>
+                </div>
+                <div class="field hidden" id="w-oth"><label for="hoz-oth-num">Номер другого хоз. поезда №:</label><input id="hoz-oth-num" placeholder="11405" inputmode="numeric" oninput="preview()"></div>
+              </div>
+              <div id="fields-TECH" class="hidden"><div class="g3">
+                <div class="field"><label for="tech-track">Главный путь:</label><select id="tech-track" onchange="preview()"><option value="I">I главный путь</option><option value="II">II главный путь</option><option value="I и II">I и II главные пути</option></select></div>
+                <div class="field"><label for="tech-section">Участок / перегон:</label><input id="tech-section" placeholder="Буюк Ипак Йули — Амир Темур Хиёбони" oninput="this.dataset.manual=1;preview()"><button type="button" class="btn btn-soft btn-sm" style="margin-top:6px" onclick="$('tech-section').dataset.manual='';onRange()">↺ Авто по станциям</button></div>
+                <div class="field"><label id="tech-extra-lbl" for="tech-extra"></label><input id="tech-extra" oninput="preview()"></div>
+              </div></div>
+              <div style="margin:14px 0"><span class="lbl" style="color:var(--muted)">Предпросмотр штампа:</span><div id="builder-preview"></div></div>
+              <div style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap">
+                <button type="button" class="btn btn-soft" onclick="closeBuilder()">Отмена</button>
+                <button type="button" class="btn btn-warning" onclick="saveDraft()">📁 В заготовки</button>
+                <button type="button" class="btn btn-success" onclick="publish()">🚀 Выдать приказ</button>
+              </div>
+            </div>
+
+            <div id="tab-journal">
+              <div class="row" style="margin-bottom:12px;color:#fff">
+                <h3 id="feed-title" style="font-size:18px"></h3>
+                <input id="feed-q" placeholder="🔍 № / дата 15/10 / поезд" oninput="jLimit=30;renderJournal()" style="width:200px;padding:8px 14px;font-size:14px" aria-label="Поиск"><select id="feed-filter" onchange="jLimit=30;renderJournal()" style="width:auto;padding:8px 14px;font-size:14px" aria-label="Фильтр">
+                  <option value="all">Все приказы</option><option value="unapproved">⏳ Ожидают утверждения</option><option value="uncopied">✍️ Не внесены в бумажный журнал</option>
+                </select>
+              </div>
+              <div id="journal-box"></div>
+            </div>
+
+            <div id="tab-drafts" class="hidden"><div class="glass"><h3 style="margin-bottom:6px">📁 Заготовки приказов</h3>
+              <p class="muted" style="margin-bottom:14px">При выдаче заготовка получает очередной номер и текущее время.</p><div id="drafts-box"></div></div></div>
+
+            <div id="tab-reports" class="hidden"><div class="glass">
+              <div class="row" style="margin-bottom:14px"><div><h3>📊 Отчёты и аналитика</h3><p class="muted">Фильтры по смене, станции, типу приказа и сотруднику. Экспорт в CSV.</p></div>
+                <button type="button" class="btn btn-primary" onclick="exportReportCSV()">📥 Экспорт отчёта (CSV)</button></div>
+              <div class="g4" style="margin-bottom:14px">
+                <div class="field" style="margin:0"><label for="rp-shift">Смена:</label><select id="rp-shift" onchange="renderReports()"><option value="all">Все смены</option><option value="day">☀️ Дневная (08:00–20:00)</option><option value="night">🌙 Ночная (20:00–08:00)</option></select></div>
+                <div class="field" style="margin:0"><label for="rp-station">Станция:</label><select id="rp-station" onchange="renderReports()"></select></div>
+                <div class="field" style="margin:0"><label for="rp-cat">Тип приказа:</label><select id="rp-cat" onchange="renderReports()"></select></div>
+                <div class="field" style="margin:0"><label for="rp-dch">Сотрудник (ДЦХ):</label><select id="rp-dch" onchange="renderReports()"></select></div>
+              </div>
+              <div class="g2" style="margin-bottom:14px">
+                <div class="field" style="margin:0"><label for="rp-from">Дата с:</label><input type="date" id="rp-from" onchange="renderReports()"></div>
+                <div class="field" style="margin:0"><label for="rp-to">Дата по:</label><input type="date" id="rp-to" onchange="renderReports()"></div>
+              </div>
+              <div id="rp-stats" class="stat-grid"></div>
+              <div style="overflow-x:auto"><table><thead><tr><th>№</th><th>Дата и время</th><th>Тип приказа</th><th>ДЦХ</th><th>Станции</th><th>Статус</th></tr></thead><tbody id="rp-body"></tbody></table></div>
+              <div id="rp-empty" class="muted hidden" style="padding:16px;text-align:center;font-weight:700">По заданным фильтрам приказов не найдено.</div>
+            </div></div>
+
+            <div id="tab-logs" class="hidden"><div class="glass">
+              <div class="row" style="margin-bottom:14px"><div><h3>📜 Системные логи</h3><p class="muted">Хранятся последние 300 записей</p></div>
+              <input id="logs-q" placeholder="🔍 Поиск по логам" style="width:240px" oninput="renderLogs()" aria-label="Поиск"></div>
+              <div style="overflow-x:auto"><table><thead><tr><th>Дата и время</th><th>Сотрудник</th><th>Действие</th></tr></thead><tbody id="logs-body"></tbody></table></div></div></div>
+
+            <div id="tab-admin" class="hidden"><div class="glass">
+              <div class="row" style="margin-bottom:16px"><div><h3 style="color:var(--purple)">🛠 Панель основателя</h3><p class="muted">Пароли, шаблоны, нумерация, очистка</p></div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn btn-primary" onclick="exportCSV()">📥 Архив (CSV)</button><button type="button" class="btn btn-warning" onclick="cleanup(true)">🧹 Очистить утверждённые старше 5 дней</button></div></div>
+              <div style="background:rgba(255,255,255,.75);padding:14px;border-radius:var(--rm);margin-bottom:14px">
+                <h4 style="margin-bottom:10px;color:#1e3a8a">👤 Аккаунты сотрудников</h4>
+                <div class="g4">
+                  <div class="field"><label for="na-email">Электронная почта:</label><input id="na-email" type="email"></div>
+                  <div class="field"><label for="na-pass">Пароль (от 6 символов):</label><input id="na-pass"></div>
+                  <div class="field"><label for="na-name">Фамилия И.:</label><input id="na-name"></div>
+                  <div class="field"><label for="na-role">Роль:</label><select id="na-role" onchange="show('na-st-w',this.value==='station')"><option value="station">Станция</option><option value="dch">ДЦХ</option><option value="chief">Старший ДЦХ</option><option value="founder">Основатель</option></select></div>
+                </div>
+                <div class="field" id="na-st-w"><label for="na-st">Станция:</label><select id="na-st"></select></div>
+                <button type="button" class="btn btn-purple" onclick="admCreate()">➕ Создать аккаунт</button>
+                <div id="acc-list" style="margin-top:12px;overflow-x:auto"></div>
+              </div>
+              <div style="background:rgba(255,255,255,.75);padding:14px;border-radius:var(--rm);margin-bottom:14px">
+                <h4 style="margin-bottom:10px;color:#1e3a8a">➕ Новый подшаблон</h4>
+                <div class="g3">
+                  <div class="field" style="margin:0"><label for="adm-cat">Раздел:</label><select id="adm-cat"><option value="AB_TO_ALS">АБ → АЛС-АРС</option><option value="ALS_TO_AB">АЛС-АРС → АБ</option><option value="ENERGY_DCH">Энергодиспетчеру</option><option value="VOLTAGE_OFF">Снятие напряжения</option><option value="TRACK_CLOSE">Закрытие пути</option></select></div>
+                  <div class="field" style="margin:0"><label for="adm-title">Название:</label><input id="adm-title"></div>
+                  <div class="field" style="margin:0"><label for="adm-body">Текст ({путь}, {участок}, {доп}):</label><input id="adm-body" placeholder="По {путь} на участке {участок} ..."></div>
+                </div>
+                <button type="button" class="btn btn-purple" style="margin-top:10px" onclick="admAddTpl()">➕ Добавить</button><div id="tpl-list" style="margin-top:10px"></div>
+              </div>
+              <div class="g2" style="background:rgba(255,255,255,.75);padding:14px;border-radius:var(--rm)">
+                <div class="field" style="margin:0"><label for="adm-num">Следующий номер приказа №:</label><div style="display:flex;gap:8px"><input type="number" id="adm-num"><button type="button" class="btn btn-primary" onclick="admSaveNum()">Задать</button></div></div>
+                <div class="field" style="margin:0"><label>Синхронизация:</label><button type="button" class="btn btn-purple" style="width:100%" onclick="forceSync()">☁️ Синхронизировать</button></div>
+              </div>
+            </div></div>
+          </div></div>
+
+          <script>
+          const BASE="https://chilonzor-ikr-default-rtdb.asia-southeast1.firebasedatabase.app";
+          const API_KEY="AIzaSyDuFe4vZGsm1k5oQ-kX75FK1euluVWOxf4";
+          const LS="metro_v8",LSO="metro_v8_out",LSS="metro_v8_sess";
+          const STN=[["biy","Буюк Ипак Йули"],["push","Пушкин"],["holim","Хамид Олимжон"],["atxiyo","Амир Темур Хиёбони"],["must","Мустакиллик майдони"],["paxt","Пахтакор"],["xdust","Халклар Дустлиги"],["mbog","Миллий бог"],["nav","Новза"],["mu","Мирзо Улугбек"],["chil","Чиланзар"],["olma","Олмазор"],["chosh","Чоштепа"],["uzg","Узгариш"],["serg","Сергели"],["yang","Янгихаёт"],["chin","Чинор"],["depo","Блок-пост электродепо «Чиланзар»"]].map(([code,full])=>({code,full}));
+          const SN=Object.fromEntries(STN.map(s=>[s.code,s.full]));
+          const PER=STN.slice(0,-1).map((s,i)=>({a:s.code,b:STN[i+1].code,name:`«${s.full} — ${STN[i+1].full}»`}));
+          const CATS=["SHIFT_HANDOVER","HOZ_WRONG_DIR","AB_TO_ALS","ALS_TO_AB","ENERGY_DCH","VOLTAGE_OFF","TRACK_CLOSE"];
+          const CAT_RU={SHIFT_HANDOVER:"Приём и сдача дежурства",HOZ_WRONG_DIR:"Хоз. поезд в неправильном направлении",AB_TO_ALS:"Переход с АБ на АЛС-АРС",ALS_TO_AB:"Переход с АЛС-АРС на АБ",ENERGY_DCH:"Энергодиспетчеру (ЭЧЦ)",VOLTAGE_OFF:"О снятии напряжения",TRACK_CLOSE:"О закрытии пути (перегона)"};
+          const DANGER_CATS=["VOLTAGE_OFF","TRACK_CLOSE"];
+          const DANGER_TEXT={VOLTAGE_OFF:"Снятие напряжения с контактного рельса. Убедитесь, что работы согласованы с энергодиспетчером (ЭЧЦ) и люди выведены с пути. Ошибочное снятие напряжения создаёт угрозу жизни.",TRACK_CLOSE:"Закрытие пути (перегона) для движения всех поездов. Убедитесь, что поезда на участке отсутствуют, а машинисты уведомлены. Ошибочное закрытие нарушает график и безопасность движения."};
+          const FIELDS=["b-subtemplate","b-time","b-from-st","b-to-st","sh-accepted","sh-handed","hoz-train","hoz-tr1","hoz-tr2","hoz-dep-type","hoz-dep-station","hoz-dep-peregon","hoz-dest-station","hoz-lim-mode","hoz-lim-txt","hoz-oth-mode","hoz-oth-num","tech-track","tech-section","tech-extra"];
+          const DEF_SUBS={
+           SHIFT_HANDOVER:[{id:"sh_1",title:"Приём и сдача дежурства ДЦХ (Всем ДС!)"}],
+           HOZ_WRONG_DIR:[{id:"hoz_1",title:"Отправление хозяйственного поезда в неправильном направлении"}],
+           AB_TO_ALS:[{id:"ab_als_1",title:"Переход с АБ на АЛС-АРС на участке",text:"По {путь} на участке {участок} движение поездов переводится с автоблокировки (АБ) на систему АЛС-АРС. Основание: {доп}."},{id:"ab_als_2",title:"Восстановление действия АЛС-АРС после работ",text:"В связи с окончанием работ ({доп}) по {путь} на участке {участок} действие устройств АЛС-АРС восстановлено."}],
+           ALS_TO_AB:[{id:"als_ab_1",title:"Переход с АЛС-АРС на резервную АБ",text:"По {путь} на участке {участок} движение поездов переводится с системы АЛС-АРС на резервную автоблокировку (АБ) при отключённых путевых автостопах. Причина: {доп}."},{id:"als_ab_2",title:"Переход на АБ по неисправности АЛС-АРС",text:"Ввиду неисправности устройств АЛС-АРС ({доп}) по {путь} на участке {участок} установить движение поездов по сигналам автоблокировки (АБ)."}],
+           ENERGY_DCH:[{id:"ech_1",title:"Энергодиспетчеру: заявка на снятие напряжения с КР",text:"Энергодиспетчеру (ЭЧЦ) {доп}. Прошу снять напряжение с контактного рельса по {путь} на участке {участок} для производства работ."},{id:"ech_2",title:"Энергодиспетчеру: заявка на подачу напряжения в КР",text:"Энергодиспетчеру (ЭЧЦ) {доп}. Работы окончены, люди выведены. Прошу подать напряжение на контактный рельс по {путь} на участке {участок}."}],
+           VOLTAGE_OFF:[{id:"volt_1",title:"О снятии напряжения с контактного рельса",text:"Снято напряжение с контактного рельса по {путь} на участке {участок}. Приказ ЭЧЦ {доп}."},{id:"volt_2",title:"О подаче напряжения на контактный рельс",text:"Подано напряжение на контактный рельс по {путь} на участке {участок}. Приказ ЭЧЦ {доп}."}],
+           TRACK_CLOSE:[{id:"trk_1",title:"О закрытии пути (перегона) для движения всех поездов",text:"Закрывается для движения всех поездов {путь} на участке {участок} по причине: {доп}."},{id:"trk_2",title:"Об открытии пути (перегона) для движения поездов",text:"В связи с устранением неисправности / окончанием работ ({доп}) {путь} на участке {участок} открывается для движения поездов."}]
+          };
+          const clone=x=>JSON.parse(JSON.stringify(x));
+          const $=id=>document.getElementById(id);
+          const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+          const show=(id,on)=>$(id)&&$(id).classList.toggle("hidden",!on);
+
+          function defaults(){return{users:{},subs:clone(DEF_SUBS),meta:{next:201,activeDch:"Икрамов Д.",prevDch:"Исмоилов А."},duties:{},orders:{},logs:{}}}
+          function norm(r){
+           const d=defaults();
+           const s={users:r.users||d.users,subs:r.subs||d.subs,meta:Object.assign(d.meta,r.meta||{}),duties:r.duties||{},orders:r.orders||{},logs:r.logs||{}};
+           Object.values(s.orders).forEach(o=>{o.stations=o.stations||[];o.acks=o.acks||{};o.f=o.f||{};o.canceled=!!o.cancel});
+           CATS.forEach(c=>{if(!s.subs[c])s.subs[c]=clone(DEF_SUBS[c])});
+           return s;
+          }
+          let S,OUT=[],me=null,cat="HOZ_WRONG_DIR",sel=[],lastRaw="",loginGrp="disp";
+          try{S=norm(JSON.parse(localStorage.getItem(LS)||"null")||defaults());OUT=JSON.parse(localStorage.getItem(LSO)||"[]")}catch(e){S=defaults();OUT=[]}
+
+          function net(on){
+           const el=$("net");if(!el)return;
+           const ok=on&&navigator.onLine!==false;
+           el.className="net-bar "+(ok?"net-online":"net-offline");
+           el.textContent=ok?"🟢 ОНЛАЙН":"🔴 ОФФЛАЙН — НЕТ СВЯЗИ С СЕРВЕРОМ";
+          }
+          window.addEventListener("online",()=>{net(true);poll()});
+          window.addEventListener("offline",()=>{net(false);beep(300,.5)});
+          async function forceSync(){toast("☁️ Синхронизация…");await flush();await connect();await syncClock();toast("✅ Синхронизировано")}
+
+          const p2=n=>String(n).padStart(2,"0");
+          const hm=t=>{const d=new Date(t);return p2(d.getHours())+":"+p2(d.getMinutes())};
+          const dmy=t=>{const d=new Date(t);return p2(d.getDate())+"/"+p2(d.getMonth()+1)};
+          const nowHM=()=>hm(Date.now());
+          function atNear(s,ref=Date.now()){const[h,m]=s.split(":").map(Number);const d=new Date(ref);d.setHours(h,m,0,0);let t=d.getTime();if(t>ref+432e5)t-=864e5;else if(t<ref-432e5)t+=864e5;return t}
+          function atAfter(s,base){const[h,m]=s.split(":").map(Number);const d=new Date(base);d.setHours(h,m,0,0);let t=d.getTime();if(t<base)t+=864e5;return t}
+          const pubs=()=>Object.values(S.orders).filter(o=>!o.draft).sort((a,b)=>a.at-b.at||(a.num||0)-(b.num||0));
+          function floorTs(ex){let f=0;pubs().forEach(o=>{if(o.id!==ex&&!o.canceled)f=Math.max(f,o.utvAt||o.obr||o.at)});return f||null}
+          const lastPubId=()=>{const p=pubs();return p.length?p[p.length-1].id:null};
+          function shiftText(){const h=new Date(Date.now()).getHours();return h>=8&&h<20?"☀️ Дневная смена (08:00 — 20:00)":"🌙 Ночная смена (20:00 — 08:00)"}
+          function shiftWindow(){const d=new Date(Date.now()),m=d.getHours()*60+d.getMinutes();return((m>=465&&m<=510)||(m>=1185&&m<=1230))&&!Object.values(S.orders).some(o=>!o.draft&&!o.canceled&&o.cat==="SHIFT_HANDOVER"&&Date.now()-o.at<36e5)}
+          function statusOf(o){
+           if(o.canceled)return{k:"canceled",t:"ОТМЕНЁН",c:"st-canceled"};
+           if(o.draft)return{k:"draft",t:"ЧЕРНОВИК",c:"st-draft"};
+           if(!o.utvAt)return{k:"pending",t:"НА УТВЕРЖДЕНИИ",c:"st-pending"};
+           if(!o.paper)return{k:"issued",t:"ВЫДАН",c:"st-issued"};
+           return{k:"journal",t:"ВНЕСЁН В ЖУРНАЛ",c:"st-journal"};
+          }
+
+          function persist(){try{localStorage.setItem(LS,JSON.stringify(S));localStorage.setItem(LSO,JSON.stringify(OUT))}catch(e){}}
+          function setPath(root,p,v,m){const k=p.split("/");let o=root;for(let i=0;i<k.length-1;i++){if(typeof o[k[i]]!=="object"||o[k[i]]===null)o[k[i]]={};o=o[k[i]]}const l=k[k.length-1];if(v===null)delete o[l];else if(m)o[l]=Object.assign(typeof o[l]=="object"&&o[l]?o[l]:{},v);else o[l]=v}
+          function W(p,v,m){
+           if(p==="meta"&&v&&typeof v==="object"&&"next"in v&&me&&me.role!=="founder"&&v.next<(S.meta.next||1)){
+            toast("⛔ Нельзя уменьшить номер приказа");return;
+           }
+           setPath(S,p,v,m);
+           Object.values(S.orders).forEach(o=>{o.canceled=!!(o.cancel||o.canceled)});
+           OUT.push({p,v,m:!!m,ts:Date.now()});
+           if(OUT.length>200)OUT=OUT.slice(-150);
+           persist();flush();render();
+          }
+          let flushing=false,lastFlushErr="";
+          async function flush(){
+           if(flushing)return;flushing=true;
+           try{
+            const t=await tok();
+            if(!t){lastFlushErr="нет авторизации";net(false);return}
+            let consecutiveFail=0;
+            while(OUT.length){
+             const o=OUT[0];
+             let r;
+             try{
+              r=await dbf(o.p,{method:o.v===null?"DELETE":o.m?"PATCH":"PUT",headers:{"Content-Type":"application/json"},body:o.v===null?undefined:JSON.stringify(o.v),timeout:12000});
+             }catch(netErr){
+              lastFlushErr=netErr.name==="AbortError"?"таймаут сети":(netErr.message||"сеть недоступна");
+              consecutiveFail++;
+              if(consecutiveFail>=2)throw netErr;
+              await new Promise(res=>setTimeout(res,1000));
+              continue;
+             }
+             if(!r.ok&&r.status<500){
+              let body="";try{body=await r.text()}catch(e){}
+              lastFlushErr=r.status+" "+String(body).slice(0,100);
+              if(r.status===401){
+               try{await refresh();consecutiveFail=0;continue}catch(e){forceLogout("Сессия истекла. Войдите снова.");break}
+              }
+              toast(r.status===403?`⛔ Нет прав: ${o.p}`:`⚠️ Отклонено сервером (${r.status}): ${o.p}`);
+              OUT.shift();persist();consecutiveFail=0;continue;
+             }
+             if(!r.ok){
+              lastFlushErr="HTTP "+r.status;
+              consecutiveFail++;
+              if(consecutiveFail>=3)throw 0;
+              await new Promise(res=>setTimeout(res,800));
+              continue;
+             }
+             OUT.shift();persist();if(R)setPath(R,o.p,o.v,o.m);consecutiveFail=0;lastFlushErr="";
+            }
+            net(true);
+           }catch(e){lastFlushErr=lastFlushErr||(e&&e.message)||"сбой связи";net(false)}
+           finally{flushing=false}
+          }
+          let R=null,es=null,ready=false,PB=false,jLimit=30;
+          const poll=()=>{flush();connect()};
+          function node(root,path,create){let o=root;for(const k of path.split("/").filter(Boolean)){if(typeof o[k]!=="object"||o[k]===null){if(!create)return null;o[k]={}}o=o[k]}return o}
+          function rebuild(){const old=S;S=norm(clone(R||{}));OUT.forEach(o=>setPath(S,o.p,o.v,o.m));return old}
+          function newForMe(old){return me?Object.values(S.orders).filter(o=>!o.draft&&!old.orders[o.id]&&(me.role!=="station"||(!o.noSt&&o.stations.includes(me.code)))):[]}
+          let TOK=null,INIT={},streams=[];const AK="metro_v8_auth",LSP="metro_v8_prof";
+          function onEv(ev,base){
+           try{
+            const d=JSON.parse(ev.data),full=base+(d.path==="/"?"":d.path),first=!INIT[base];INIT[base]=1;
+            R=R||{};
+            if(ev.type==="patch"){const t=node(R,full,true);for(const k in d.data){if(d.data[k]===null)delete t[k];else t[k]=d.data[k]}}
+            else setPath(R,full,d.data,false);
+            const old=rebuild(),nw=newForMe(old);persist();
+            if(me){if(!first&&nw.length)alertNew(nw);render()}
+           }catch(e){console.error(e)}
+          }
+          async function connect(){
+           streams.forEach(e=>e.close());streams=[];INIT={};
+           const t=await tok();if(!me||!t)return;
+           const ps=["orders","meta","subs"];if(me.role==="chief"||me.role==="founder")ps.push("logs");if(me.role==="founder")ps.push("users");
+           ps.forEach(b=>{
+            const e=new EventSource(`${BASE}/${b}.json?auth=${t}`);
+            e.onopen=()=>net(true);
+            e.onerror=()=>{net(false);if(e.readyState===2)setTimeout(()=>{if(streams.includes(e))connect()},5000)};
+            e.addEventListener("put",ev=>onEv(ev,b));e.addEventListener("patch",ev=>onEv(ev,b));
+            e.addEventListener("auth_revoked",()=>connect());
+            streams.push(e);
+           });
+          }
+          setInterval(()=>{if(me)connect()},3e6);
+          async function claimNum(){
+           for(let i=0;i<4;i++){
+            try{
+             const r=await dbf("meta/next",{headers:{"X-Firebase-ETag":"true"},timeout:6000});
+             if(!r.ok)break;
+             const et=r.headers.get("ETag"),n=await r.json();
+             if(typeof n!=="number"||n<1)break;
+             const w=await dbf("meta/next",{method:"PUT",headers:et?{"If-Match":et,"Content-Type":"application/json"}:{"Content-Type":"application/json"},body:JSON.stringify(n+1),timeout:6000});
+             if(w.ok){S.meta.next=n+1;persist();return n}
+             if(w.status!==412)break;
+            }catch(e){break}
+           }
+           const n=S.meta.next||1;
+           S.meta.next=n+1;
+           OUT.push({p:"meta",v:{next:n+1,activeDch:S.meta.activeDch||"—",prevDch:S.meta.prevDch||"—"},m:true,ts:Date.now()});
+           persist();
+           return n;
+          }
+          const _dn=Date.now.bind(Date);let OFF=0;Date.now=()=>Math.round(_dn()+OFF);
+          async function syncClock(){try{const a=_dn(),r=await dbf("ping/"+me.uid,{method:"PUT",body:'{".sv":"timestamp"}'}),t=await r.json(),b=_dn();if(typeof t==="number")OFF=Math.round(t-(a+b)/2)}catch(e){}}
+          setInterval(()=>{if(me)syncClock()},6e5);
+          function askNotif(){try{if("Notification"in window&&Notification.permission==="default")Notification.requestPermission()}catch(e){}}
+          let tb=null;const baseTitle=document.title;
+          function alertNew(list){
+           beep(880,.35);
+           try{if(window.AndroidBridge&&window.AndroidBridge.vibrate)window.AndroidBridge.vibrate();else if(navigator.vibrate)navigator.vibrate([300,150,300,150,300])}catch(e){}
+           const txt="Новый приказ № "+list.map(o=>o.num).join(", ");
+           try{if(document.hidden&&"Notification"in window&&Notification.permission==="granted")new Notification("АРМ ДЦХ",{body:txt,requireInteraction:true})}catch(e){}
+           if(document.hidden&&!tb){let on=false;tb=setInterval(()=>{document.title=(on=!on)?"🔔 "+txt:baseTitle},900);
+            const stop=()=>{if(!document.hidden){clearInterval(tb);tb=null;document.title=baseTitle;document.removeEventListener("visibilitychange",stop)}};document.addEventListener("visibilitychange",stop)}
+          }
+
+          function validate(o){
+           const f=o.f;
+           if(!dutyOf())return"Укажите фамилию дежурного (при входе или кнопкой смены)";
+           if(!f["b-time"])return"Укажите время выдачи приказа";
+           if(!/^\d{1,2}:\d{2}$/.test(f["b-time"]))return"Некорректный формат времени выдачи";
+           if(o.cat==="HOZ_WRONG_DIR"){
+            if(!f["hoz-train"])return"Укажите номер хозяйственного поезда";
+            if(!/^\d{3,6}$/.test(f["hoz-train"]))return"Номер хоз. поезда должен содержать 3–6 цифр";
+            if(f["hoz-dep-type"]==="station"&&f["hoz-dep-station"]===f["hoz-dest-station"])return"Станции отправления и назначения совпадают";
+            if(f["hoz-oth-mode"]!=="none"&&!f["hoz-oth-num"])return"Укажите номер другого поезда";
+            if(f["hoz-oth-mode"]!=="none"&&!/^\d{3,6}$/.test(f["hoz-oth-num"]))return"Номер другого поезда должен содержать 3–6 цифр";
+           }
+           if(o.cat==="SHIFT_HANDOVER"&&(!f["sh-accepted"]||!f["sh-handed"]))return"Укажите, кто принял и кто сдал дежурство";
+           if(!["SHIFT_HANDOVER","HOZ_WRONG_DIR"].includes(o.cat)&&!f["tech-section"])return"Укажите участок";
+           if(!o.noSt&&!o.stations.length)return"Выберите хотя бы одну станцию";
+           return"";
+          }
+          function markErr(ids){ids.forEach(id=>{const e=$(id);if(e)e.classList.add("err")});setTimeout(()=>ids.forEach(id=>{const e=$(id);if(e)e.classList.remove("err")}),2500)}
+
+          function confirmDanger(title,text,onOk){
+           $("c-title").textContent=title;
+           $("c-body").innerHTML=`<div class="danger-box"><p>${esc(text)}</p></div>
+            <label class="chk"><input type="checkbox" id="c-chk"><span>Я осознаю последствия и подтверждаю выполнение операции</span></label>`;
+           show("confirm",true);
+           const ok=$("c-ok"),chk=$("c-chk");
+           ok.disabled=true;
+           chk.onchange=()=>{ok.disabled=!chk.checked};
+           ok.onclick=()=>{if(!chk.checked)return;show("confirm",false);onOk()};
+           $("c-no").onclick=()=>show("confirm",false);
+          }
+
+          let AC;
+          function beep(f=860,d=.25){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume();const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=f;g.gain.value=.25;o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+d)}catch(e){}}
+          async function wake(){try{if("wakeLock"in navigator&&document.visibilityState==="visible")await navigator.wakeLock.request("screen")}catch(e){}}
+          document.addEventListener("click",()=>{try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(e){}wake()},{once:true});
+          document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")wake()});
+          let tt;function toast(t){const e=$("toast");e.textContent=t;show("toast",true);clearTimeout(tt);tt=setTimeout(()=>show("toast",false),3800)}
+          function ask(title,def,cb){$("m-title").textContent=title;$("m-inp").value=def||"";show("modal",true);$("m-inp").focus();
+           const done=v=>{show("modal",false);if(v)cb(v)};
+           $("m-ok").onclick=()=>done($("m-inp").value.trim());$("m-no").onclick=()=>done(null);$("m-inp").onkeydown=e=>{if(e.key==="Enter")done($("m-inp").value.trim())}}
+          function askConfirm(title,text,okText){
+           return new Promise(res=>{
+            $("c-title").textContent=title||"Подтверждение";
+            $("c-body").innerHTML=`<div class="danger-box" style="border-color:#f59e0b;background:#fffbeb"><p>${esc(text||"")}</p></div>`;
+            const ok=$("c-ok"),no=$("c-no");
+            ok.textContent=okText||"Подтвердить";ok.disabled=false;
+            show("confirm",true);
+            const done=v=>{show("confirm",false);ok.onclick=null;no.onclick=null;ok.textContent="Подтвердить";ok.disabled=true;res(v)};
+            ok.onclick=()=>done(true);
+            no.onclick=()=>done(false);
+           });
+          }
+          function dutyOf(){return me?me.name:""}
+          function log(a){const t=Date.now();W(`logs/${t}_${Math.random().toString(36).slice(2,6)}`,{t,uid:me?me.uid:"",who:me?me.name:"Система",act:a})}
+          setInterval(()=>{if(!me||me.role!=="station")return;if(Object.values(S.orders).some(o=>!o.draft&&!o.canceled&&!o.noSt&&o.stations.includes(me.code)&&!o.acks[me.code])){beep(940,.4);setTimeout(()=>beep(680,.4),300)}},60000);
+
+          async function authCall(ep,body){const r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:${ep}?key=${API_KEY}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});const j=await r.json();if(!r.ok)throw new Error((j.error&&j.error.message)||"ERROR");return j}
+          function saveRef(){try{localStorage.setItem(AK,JSON.stringify({ref:TOK.ref}))}catch(e){}}
+          function setTok(j){TOK={id:j.idToken,ref:j.refreshToken,uid:j.localId,exp:_dn()+(+j.expiresIn-120)*1000};saveRef()}
+          async function refresh(){
+           let r,j;
+           try{r=await fetch(`https://securetoken.googleapis.com/v1/token?key=${API_KEY}`,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:"grant_type=refresh_token&refresh_token="+encodeURIComponent(TOK.ref)});j=await r.json()}catch(e){throw new Error("сеть")}
+           if(!r.ok){const er=new Error("auth");er.auth=true;throw er}
+           TOK.id=j.id_token;TOK.ref=j.refresh_token;TOK.exp=_dn()+(+j.expires_in-120)*1000;saveRef();
+          }
+          async function tok(){
+           if(!TOK)return null;
+           if(!TOK.id||_dn()>=TOK.exp){try{await refresh()}catch(e){if(e.auth)forceLogout("Сессия завершена. Войдите снова.");return null}}
+           return TOK.id;
+          }
+          const dbf=async(p,o={})=>{
+           const t=await tok();if(!t)throw new Error("нет авторизации");
+           const ctrl=new AbortController();
+           const ms=typeof o.timeout==="number"?o.timeout:10000;
+           const timer=setTimeout(()=>ctrl.abort(),ms);
+           try{
+            const opts={...o,signal:ctrl.signal};delete opts.timeout;
+            return await fetch(`${BASE}/${p}.json?auth=${t}`,opts);
+           }finally{clearTimeout(timer)}
+          };
+          const mk=p=>({uid:p.uid,login:p.uid,role:p.role,code:p.code||"",name:p.name||p.email,title:p.name||p.email,stationFull:SN[p.code]||"",sur:""});
+          function clearSess(){try{[AK,LSP,LS,LSO,LSS].forEach(k=>localStorage.removeItem(k))}catch(e){}}
+          let _loggingOut=false;
+          function clearRuntimeState(){
+           streams.forEach(e=>{try{e.close()}catch(_){}});streams=[];INIT={};
+           if(tb){clearInterval(tb);tb=null}
+           try{document.title=baseTitle}catch(_){}
+           me=null;TOK=null;OUT=[];R=null;PB=false;pend=false;jLimit=30;tab="journal";
+           S=defaults();
+           clearSess();
+           try{sessionStorage.clear()}catch(_){}
+          }
+          async function firebaseSignOut(){
+           try{
+            if(TOK&&TOK.id)await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signOut?key=${API_KEY}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({idToken:TOK.id})});
+            return true;
+           }catch(e){return false}
+          }
+          function forceLogout(msg){
+           clearRuntimeState();
+           show("modal",false);show("confirm",false);closeBuilder();
+           show("view-app",false);show("view-login",true);
+           const le=$("login-err");
+           if(msg){le.textContent=msg;show("login-err",true)}else{le.textContent="";show("login-err",false)}
+           try{$("inp-pass").value="";$("inp-login").value=""}catch(_){}
+           _loggingOut=false;
+           const lb=$("btn-logout");if(lb){lb.disabled=false;lb.textContent="Выйти"}
+          }
+          let _loginAttempts=0,_loginLockUntil=0;
+          async function doLogin(){
+           const em=$("inp-login").value.trim(),pw=$("inp-pass").value;
+           if(!em||!pw){$("login-err").textContent="Введите электронную почту и пароль";show("login-err",true);return}
+           if(Date.now()<_loginLockUntil){toast("⏳ Слишком много попыток. Подождите немного.");return}
+           try{
+            setTok(await authCall("signInWithPassword",{email:em,password:pw,returnSecureToken:true}));
+            const r=await dbf("users/"+TOK.uid),p=await r.json();
+            if(!r.ok||!p||!p.role||p.active===false){TOK=null;clearSess();throw new Error("NOACCESS")}
+            _loginAttempts=0;
+            try{localStorage.setItem(LSP,JSON.stringify(Object.assign({uid:TOK.uid},p)))}catch(e){}
+            enter(mk(Object.assign({uid:TOK.uid},p)),true);
+           }catch(e){
+            _loginAttempts++;
+            if(_loginAttempts>=5){_loginLockUntil=Date.now()+30000;_loginAttempts=0}
+            const m=String(e.message);
+            $("login-err").textContent=/INVALID|EMAIL_NOT|PASSWORD|CREDENTIAL/.test(m)?"❌ Неверная электронная почта или пароль":/TOO_MANY/.test(m)?"⏳ Слишком много попыток, подождите":m==="NOACCESS"?"⛔ Нет доступа: профиль не создан или отключён":m==="сеть"?"📡 Нет связи с сервером. Проверьте интернет.":"❌ Ошибка входа: "+m;
+            show("login-err",true);beep(300,.3);
+           }
+          }
+          async function resetPass(){
+           const em=$("inp-login").value.trim();
+           if(!em){$("login-err").textContent="Введите электронную почту и нажмите «Забыли пароль?»";show("login-err",true);return}
+           try{await authCall("sendOobCode",{requestType:"PASSWORD_RESET",email:em});toast("✉️ Письмо для сброса пароля отправлено")}catch(e){toast("⚠️ Не удалось отправить: "+e.message)}
+          }
+          function enter(u,fresh){
+           me=u;if(fresh)log("Вход в систему");
+           show("view-login",false);show("view-app",true);show("login-err",false);$("inp-pass").value="";
+           initBuilder();connect();syncClock();askNotif();openTab("journal");
+           if(u.role==="founder")setTimeout(()=>{if(me&&R){if(!R.meta)W("meta",S.meta);if(!R.subs)W("subs",S.subs);cleanup(false)}},4000);
+          }
+          async function doLogout(){
+           if(_loggingOut)return;
+           _loggingOut=true;
+           const lb=$("btn-logout");if(lb){lb.disabled=true;lb.textContent="Выход…"}
+           try{
+            try{await Promise.race([flush(),new Promise(r=>setTimeout(r,4000))])}catch(e){}
+            if(OUT.length){
+             const go=await askConfirm("Выход из системы","Есть несохранённые изменения — связь с сервером отсутствует. Если выйти сейчас, они будут потеряны. Продолжить выход?","Выйти без сохранения");
+             if(!go){_loggingOut=false;if(lb){lb.disabled=false;lb.textContent="Выйти"}return}
+            }
+            log("Выход из системы");
+            try{await Promise.race([flush(),new Promise(r=>setTimeout(r,3000))])}catch(e){}
+            const okSrv=await firebaseSignOut();
+            forceLogout(okSrv?"":"⚠️ Вы вышли из приложения, но завершить сеанс на сервере не удалось (нет связи). При подозрении на чужой доступ смените пароль.");
+            toast(okSrv?"✅ Вы вышли из системы":"✅ Вы вышли из системы (локально)");
+           }catch(e){
+            forceLogout("⚠️ Не удалось завершить выход: "+((e&&e.message)||"неизвестная ошибка")+". Попробуйте ещё раз.");
+           }finally{
+            _loggingOut=false;
+            const b=$("btn-logout");if(b){b.disabled=false;b.textContent="Выйти"}
+           }
+          }
+
+          let tab="journal",pend=false;
+          function openTab(t){tab=t;["journal","drafts","reports","logs","admin"].forEach(x=>{$("nav-"+x).classList.toggle("active",x===t);show("tab-"+x,x===t)});render()}
+          function render(){
+           if(!me)return;
+           const a=document.activeElement;
+           if(a&&a.closest&&a.closest("#journal-box")&&/INPUT|SELECT/.test(a.tagName)){pend=true;return}
+           const r=me.role,duty=dutyOf(),m=S.meta;
+           $("user-name").textContent=me.role==="station"?`${me.name} • ${SN[me.code]}`:me.name;
+           const pl=$("role-pill");
+           pl.textContent={founder:"ОСНОВАТЕЛЬ",chief:"СТАРШИЙ ДЦХ",dch:"ДЦХ"}[r]||me.stationFull||SN[me.code];
+           pl.className="pill "+({founder:"p-founder",chief:"p-chief",station:"p-station"}[r]||"");
+           show("shift-banner",shiftWindow()&&(r==="dch"||r==="chief"||r==="founder"));
+           $("shift-window").textContent=r==="station"?"":shiftText();
+           $("active-dch").textContent=r==="station"?`📍 ${SN[me.code]||""}`:`На дежурстве ДЦХ: ${m.activeDch} (сдал: ДЦХ ${m.prevDch})`;
+           $("my-duty").textContent=r==="station"?`👤 ${me.name}`:(duty?`👤 Дежурный текущей смены: ${duty}`:"⚠️ Укажите фамилию дежурного");
+           $("next-num").textContent=r==="station"?"":`Следующий номер приказа: № ${m.next}`;
+           const canIssue=r==="dch"||r==="chief"||r==="founder";
+           show("btn-shift",canIssue);show("btn-new",canIssue);
+           show("nav-drafts",canIssue);show("nav-reports",canIssue);show("nav-logs",r==="chief"||r==="founder");show("nav-admin",r==="founder");
+           $("drafts-cnt").textContent=Object.values(S.orders).filter(o=>o.draft&&(r==="founder"||r==="chief"||o.by===me.login||o.by===me.uid)).length;
+           if(tab==="journal")renderJournal();else if(tab==="drafts")renderDrafts();else if(tab==="reports")renderReports();else if(tab==="logs")renderLogs();else if(tab==="admin")renderAdmin();
+          }
+          document.addEventListener("focusout",()=>{if(pend)setTimeout(()=>{pend=false;render()},250)});
+
+          function initBuilder(){
+           ["b-from-st","b-to-st"].forEach(id=>{const s=$(id);s.innerHTML="";STN.forEach((st,i)=>s.add(new Option(st.full,i)))});
+           ["hoz-dep-station","hoz-dest-station"].forEach(id=>{const s=$(id);s.innerHTML="";STN.forEach(st=>s.add(new Option(st.full,st.code)))});
+           const p=$("hoz-dep-peregon");p.innerHTML="";PER.forEach((x,i)=>p.add(new Option(x.name,i)));
+          }
+          function openBuilder(c,edit){
+           show("box-builder",true);
+           const fl=floorTs(edit?edit.id:null);
+           $("floor-hint").textContent=fl?`Не ранее утверждения предыдущего приказа (${hm(fl)})`:"Ограничений по времени нет";
+           if(edit){
+            $("edit-id").value=edit.id;
+            $("builder-pill").textContent="Редактирование заготовки";
+            FIELDS.forEach(id=>{if(edit.f[id]!==undefined)$(id).value=edit.f[id]});
+            $("b-time").value=hm(edit.at);
+            $("tech-section").dataset.manual=1;
+            sel=[...edit.stations];
+            cat=edit.cat;selectCat(cat,edit.f["b-subtemplate"],true);
+           }else{
+            $("edit-id").value="";
+            $("builder-pill").textContent=`Приказ № ${S.meta.next}`;
+            let t=nowHM();if(fl&&atNear(t)<fl)t=hm(fl);
+            $("b-time").value=t;
+            $("sh-accepted").value=dutyOf()||S.meta.activeDch;$("sh-handed").value=S.meta.activeDch;
+            $("hoz-train").value="11236";$("hoz-oth-num").value="";$("tech-extra").value="";
+            $("tech-section").dataset.manual="";
+            $("b-from-st").value=0;$("b-to-st").value=3;
+            onRange(true);
+            selectCat(c||"HOZ_WRONG_DIR");
+           }
+           $("box-builder").scrollIntoView({behavior:"smooth",block:"start"});
+          }
+          function closeBuilder(){show("box-builder",false)}
+          function selectCat(c,presetSub,keep){
+           cat=c;CATS.forEach(x=>$("cat-"+x).classList.toggle("active",x===c));
+           const s=$("b-subtemplate"),prev=presetSub||s.value;s.innerHTML="";
+           (S.subs[c]||[]).forEach(i=>s.add(new Option(i.title,i.id)));
+           if(prev&&[...s.options].some(o=>o.value===prev))s.value=prev;
+           $("tech-extra-lbl").textContent=c==="ENERGY_DCH"?"Фамилия энергодиспетчера (ЭЧЦ):":"Основание / причина / примечание:";
+           $("tech-extra").placeholder=c==="ENERGY_DCH"?"Например: Смирнов":"Например: плановые работы / приказ ЭЧЦ №14";
+           const dg=DANGER_CATS.includes(c);
+           show("danger-warn",dg);if(dg)$("danger-text").textContent=DANGER_TEXT[c];
+           renderChips();preview();
+          }
+          function vis(){
+           show("fields-SH",cat==="SHIFT_HANDOVER");show("fields-HOZ",cat==="HOZ_WRONG_DIR");
+           show("fields-TECH",!["SHIFT_HANDOVER","HOZ_WRONG_DIR"].includes(cat));
+           show("b-stations-section",cat!=="ENERGY_DCH"&&cat!=="SHIFT_HANDOVER");
+           const dt=$("hoz-dep-type").value;show("w-dep-st",dt==="station");show("w-dep-per",dt==="peregon");
+           show("w-lim",$("hoz-lim-mode").value!=="none");show("w-oth",$("hoz-oth-mode").value!=="none");
+          }
+          function onRange(silent){
+           const i1=+$("b-from-st").value||0,i2=+$("b-to-st").value||0,st=i1<=i2?1:-1;
+           sel=[];for(let i=i1;i!==i2+st;i+=st)sel.push(STN[i].code);
+           $("hoz-dep-station").value=STN[i1].code;$("hoz-dest-station").value=STN[i2].code;
+           const ts=$("tech-section");if(!ts.dataset.manual)ts.value=`${STN[i1].full} — ${STN[i2].full}`;
+           renderChips();if(!silent)preview();
+          }
+          function allStations(){sel=STN.map(s=>s.code);renderChips();preview()}
+          function renderChips(){
+           const b=$("chips");b.innerHTML="";
+           STN.forEach(s=>{const c=document.createElement("div");c.className="chip"+(sel.includes(s.code)?" active":"");c.textContent=s.full;c.tabIndex=0;
+            const tg=()=>{if(sel.includes(s.code)){if(sel.length>1)sel=sel.filter(x=>x!==s.code)}else sel.push(s.code);renderChips();preview()};
+            c.onclick=tg;c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tg()}};b.appendChild(c)});
+          }
+          function onPeregon(){const p=PER[+$("hoz-dep-peregon").value||0];if(p){[p.a,p.b].forEach(c=>{if(!sel.includes(c))sel.push(c)});renderChips()}preview()}
+          function collect(asDraft){
+           const f={};FIELDS.forEach(id=>f[id]=$(id).value.trim());
+           const list=S.subs[cat]||[];const sub=list.find(x=>x.id===f["b-subtemplate"])||list[0]||{};
+           const en=cat==="ENERGY_DCH",sh=cat==="SHIFT_HANDOVER";
+           const ord=STN.map(s=>s.code).filter(c=>sel.includes(c));
+           return{id:Date.now(),cat,draft:asDraft,noSt:en,noObr:sh||en,num:asDraft?null:S.meta.next,at:atNear(f["b-time"]||nowHM()),
+            subTitle:sub.title||"",subText:sub.text||"",stations:en?[]:sh?STN.map(s=>s.code):ord,acks:{},
+            dch:dutyOf(),by:me.uid,paper:false,created:Date.now(),f};
+          }
+          function preview(){vis();$("builder-preview").innerHTML=stamp(collect(false))}
+
+          function fill(tpl,f){
+           const v=x=>`<span class="v">${esc(x)}</span>`;
+           return esc(tpl).replace(/\{путь\}/g,()=>v(f["tech-track"])).replace(/\{участок\}/g,()=>v(f["tech-section"]||"Чиланзарская линия")).replace(/\{доп\}/g,()=>v(f["tech-extra"]||"—"));
+          }
+          function stamp(o){
+           const f=o.f||{},v=x=>`<span class="v">${esc(x)}</span>`,dch=`<div style="text-align:center;margin-top:10px" class="big">Диспетчер ${v(o.dch)}</div>`;
+           const stl=o.stations.map(c=>SN[c]||c).join(", ");
+           const num=o.draft?"ЧЕРНОВИК":`№ ${esc(o.num)}`;
+           const obr=o.noObr?"":(o.obr?`<div class="trow">ОБР: ${hm(o.obr)}<small>${esc(SN[o.obrSt]||"")}</small></div>`:`<div class="trow" style="color:#d97706">ОБР: ожид.</div>`);
+           const utv=o.utvAt?`<div class="trow" style="color:#16a34a">УТВ: ${hm(o.utvAt)}</div>`:`<div class="trow" style="color:#dc2626">УТВ: ожид.</div>`;
+           let body="";
+           if(o.cat==="SHIFT_HANDOVER"){
+            body=`<div class="stop"><div class="big">Всем ДС!</div></div><div style="margin:6px 0">Дежурство принял(а)<br>ДЦХ ${v(f["sh-accepted"]||o.dch)}</div><div style="margin:6px 0">Дежурство сдал(а)<br>ДЦХ ${v(f["sh-handed"]||"___")}</div>`;
+           }else if(o.cat==="HOZ_WRONG_DIR"){
+            const st=f["hoz-dep-type"]==="station";
+            const dep=st?SN[f["hoz-dep-station"]]:(PER[f["hoz-dep-peregon"]]||{}).name;
+            const dw=st?`со станции <span class="strike">(с перегона)</span>`:`<span class="strike">со станции</span> (с перегона)`;
+            const lt=v(f["hoz-lim-txt"]||"___"),lm=f["hoz-lim-mode"];
+            const lw=lm==="do"?`до <span class="strike">/ за</span> ${lt}`:lm==="za"?`<span class="strike">до /</span> за ${lt}`:`<span class="strike">до / за</span>`;
+            const om=f["hoz-oth-mode"],on=v(f["hoz-oth-num"]||"___");
+            const ow=om==="ahead"?`<div>Впереди Вас <span class="strike">(за Вами)</span> следует хозяйственный поезд № ${on}</div>`:om==="behind"?`<div><span class="strike">Впереди Вас</span> (за Вами) следует хозяйственный поезд № ${on}</div>`:`<div class="strike">Впереди Вас (за Вами) следует хозяйственный поезд № ______</div>`;
+            const tr=v(f["hoz-train"]||"___");
+            body=`<div class="stop"><div>Станции ${v(stl)}</div><div class="big" style="flex-shrink:0">ДС!</div></div>
+             <div>Копия машинисту хозяйственного поезда № ${tr}</div><div>Разрешается хозяйственному поезду № ${tr}</div>
+             <div>следовать в неправильном направлении по ${v(f["hoz-tr1"])} главному</div><div>пути ${dw} ${v(dep||"")}</div>
+             <div>на ${v(f["hoz-tr2"])} главный путь ${lw}</div><div style="text-align:right;padding-right:10px">станции: ${v(SN[f["hoz-dest-station"]]||"")}</div>
+             <div style="margin-top:4px">${ow}</div>${dch}`;
+           }else if(o.cat==="ENERGY_DCH"){
+            body=`<div class="stop"><div style="font-weight:900">Энергодиспетчеру (ЭЧЦ) ${v(f["tech-extra"]||"—")}</div><div style="font-size:12px;font-weight:800;color:#b45309">Только в журнале ДЦХ</div></div><div style="margin:8px 0">${fill(o.subText||"Энергодиспетчеру (ЭЧЦ) {доп}. На участке {участок} по {путь}.",f)}</div>${dch}`;
+           }else{
+            body=`<div class="stop"><div>Станции ${v(stl)}</div><div class="big" style="flex-shrink:0">ДС!</div></div><div style="margin:8px 0">${fill(o.subText||"По {путь} на участке {участок}. Основание: {доп}.",f)}</div>${dch}`;
+           }
+           const st=statusOf(o);
+           const html=`<div class="stamp"><div class="sl"><div class="slt"><div class="cdate">${dmy(o.at)}<small style="display:block;font-size:11px">${new Date(o.at).getFullYear()}</small></div><div class="cnum">${num}</div></div>
+            <div class="times"><div class="trow">ВЫД: ${hm(o.at)}</div>${obr}${utv}</div></div><div class="sr">${body}</div></div>`;
+           const badge=`<div style="margin-bottom:8px"><span class="st ${st.c}">${st.t}</span></div>`;
+           const full=badge+html;
+           return o.canceled?`<div class="cx">${full}</div>`:full;
+          }
+
+          function saveDraft(){
+           const id=$("edit-id").value,o=collect(true);
+           if(id){const old=S.orders[id];if(old){o.id=old.id;o.created=old.created}}
+           W("orders/"+o.id,o);log(`Сохранена заготовка (${o.subTitle||CAT_RU[o.cat]||o.cat})`);
+           closeBuilder();openTab("drafts");toast("📁 Заготовка сохранена");
+          }
+          async function publish(){
+           if(PB){toast("⏳ Уже идёт выдача, подождите…");return}
+           const id=$("edit-id").value;
+           if(!$("b-time").value){toast("⚠️ Укажите время выдачи");markErr(["b-time"]);return}
+           const o=collect(false),fl=floorTs(id?+id:null);
+           const er=validate(o);if(er){toast("⚠️ "+er);beep(300,.3);return}
+           if(fl&&o.at<fl){toast(`⚠️ Ошибка хронологии: время (${hm(o.at)}) раньше утверждения предыдущего приказа (${hm(fl)})`);beep(300,.4);return}
+           if(id&&S.orders[id]){o.id=S.orders[id].id;o.created=S.orders[id].created}
+           const doPublish=async()=>{
+            PB=true;
+            toast("⏳ Регистрация приказа…");
+            try{
+             o.num=await claimNum();
+             o.by=me.uid;
+             const meta={};
+             if(o.cat==="SHIFT_HANDOVER"){meta.activeDch=o.f["sh-accepted"]||S.meta.activeDch;meta.prevDch=o.f["sh-handed"]||S.meta.prevDch;}
+             W("orders/"+o.id,o);if(Object.keys(meta).length)W("meta",meta,true);
+             log(`Выдан приказ № ${o.num} в ${hm(o.at)} (${o.subTitle||CAT_RU[o.cat]||o.cat})`);
+             closeBuilder();beep(880,.35);openTab("journal");
+             toast(`🚀 Приказ № ${o.num} зарегистрирован`);
+            }catch(e){
+             console.error("publish",e);
+             toast("⚠️ Ошибка выдачи: "+(e.message==="нет авторизации"?"сессия истекла, войдите снова":e.name==="AbortError"?"таймаут сети, данные сохранены локально":e.message||"сеть"));
+             beep(300,.3);
+            }finally{PB=false}
+           };
+           if(DANGER_CATS.includes(o.cat)){
+            confirmDanger("Подтверждение опасной операции",DANGER_TEXT[o.cat]+" Нажмите «Подтвердить», чтобы выдать приказ.",doPublish);
+           }else doPublish();
+          }
+
+          const openDet=new Set();
+          function renderJournal(){
+           const box=$("journal-box"),flt=$("feed-filter").value;
+           let list=pubs().reverse();
+           const isSt=me.role==="station";
+           if(isSt){
+            list=list.filter(o=>!o.noSt&&o.stations.includes(me.code));
+            $("feed-title").textContent=`📥 Приказы для станции «${SN[me.code]}»`;
+            $("feed-filter").style.display="none";
+           }else{
+            $("feed-title").textContent="📖 Единый журнал диспетчерских приказов";
+            $("feed-filter").style.display="";
+           }
+           const q=($("feed-q").value||"").trim().toLowerCase();
+           list=list.filter(o=>(isSt||((flt!=="unapproved"||!o.utvAt)&&(flt!=="uncopied"||!o.paper)))&&(!q||`${o.num} ${dmy(o.at)} ${o.subTitle} ${o.dch} ${o.f["hoz-train"]||""}`.toLowerCase().includes(q)));
+           if(isSt)list.sort((a,b)=>{const ac=!a.canceled&&!a.acks[me.code]?0:1,bc=!b.canceled&&!b.acks[me.code]?0:1;return ac-bc||b.at-a.at});
+           const total=list.length;list=list.slice(0,jLimit);
+           const last=lastPubId();let h="";
+           list.forEach(o=>{
+            if(flt==="unapproved"&&o.utvAt)return;if(flt==="uncopied"&&o.paper)return;
+            h+=`<div class="glass" id="card-${o.id}" style="border-left:6px solid ${o.utvAt?"var(--success)":"var(--warning)"}">${stamp(o)}${o.canceled?`<div style="margin-top:8px;font-weight:800;color:#991b1b">⛔ Отменён: ${esc(o.cancel.reason)} (${esc(o.cancel.by)}, ${hm(o.cancel.at)})</div>`:""}${o.hist?`<div class="muted" style="margin-top:6px">✏️ Правки времени: ${Object.values(o.hist).map(x=>`${esc(x.from)}→${esc(x.to)} (${esc(x.who)})`).join("; ")}</div>`:""}`;
+            if(me.role==="station"&&!o.canceled&&!o.noSt&&!o.acks[me.code])
+             h+=`<div class="alert"><b style="color:#991b1b">🔔 НОВЫЙ ПРИКАЗ № ${esc(o.num)}! Подтвердите получение:</b><span style="font-weight:800">${esc(me.name)}</span><button type="button" class="btn btn-success" onclick="stConfirm(${o.id})">✅ Принял / Ознакомился</button></div>`;
+            else if(me.role==="station"&&o.acks[me.code])
+             h+=`<div style="margin-top:8px;padding:8px 12px;background:rgba(220,252,231,.9);border-radius:var(--rm);font-weight:800;color:#166534;font-size:13px">✅ Вы подтвердили: ${esc(o.acks[me.code].by)} (${hm(o.acks[me.code].t)})</div>`;
+            const canCtrl=!o.canceled&&(me.role==="founder"||me.role==="chief"||(me.role==="dch"&&!o.utvAt&&(!o.by||o.by===me.login||o.by===me.uid)));
+            if(canCtrl)h+=ctrl(o,last);
+            let stBtn="",stList="";
+            if(me.role!=="station"&&!o.noSt){
+             const ok=o.stations.filter(c=>o.acks[c]).length;
+             stBtn=`<button type="button" class="btn btn-soft btn-sm" onclick="toggleDet(${o.id})">👁 Статус станций (${ok}/${o.stations.length})</button>`;
+             stList=`<div id="det-${o.id}" class="${openDet.has(o.id)?"":"hidden"}" style="margin-top:10px;background:rgba(255,255,255,.9);border-radius:var(--rm);padding:8px 12px">`+o.stations.map(c=>{const a=o.acks[c];return`<div class="row" style="padding:6px 8px;border-bottom:1px solid rgba(148,163,184,.25);font-size:13px"><div><b>${esc(SN[c])}</b> ${o.obrSt===c?'<span class="pill p-station" style="padding:2px 8px;font-size:11px">🗣 Обратно</span>':""}</div><div>${a?`<span style="color:#166534;font-weight:800">🟢 Принял: ${esc(a.by)} (${hm(a.t)})</span>`:'<span style="color:#dc2626;font-weight:800">🔴 Ожидание...</span>'}</div></div>`}).join("")+`</div>`;
+            }else if(me.role!=="station"&&o.noSt) stBtn=`<span style="font-size:12px;font-weight:800;color:#b45309">⚡ Приказ энергодиспетчеру (без отправки на станции)</span>`;
+            const paper=me.role!=="station"?`<button type="button" class="btn ${o.paper?"btn-success":"btn-soft"} btn-sm" onclick="togglePaper(${o.id})">${o.paper?"✅ Внесено в книгу":"✍️ Отметить перенос в книгу"}</button>`:"";
+            const canCancel=!o.canceled&&(me.role==="founder"||me.role==="chief"||(me.role==="dch"&&!o.utvAt&&(!o.by||o.by===me.login||o.by===me.uid)));
+            const del=(me.role!=="station"?`<button type="button" class="btn btn-soft btn-sm" onclick="printOrder(${o.id})">🖨 Печать</button>`:"")+
+             (canCancel?`<button type="button" class="btn btn-danger btn-sm" onclick="cancelOrder(${o.id})">⛔ Отменить</button>`:"");
+            if(me.role==="station")
+             h+=`<div class="row foot" style="justify-content:flex-end"><button type="button" class="btn btn-soft btn-sm" onclick="printOrder(${o.id})">🖨 Печать</button></div>`;
+            else
+             h+=`<div class="row foot">${stBtn}<div style="display:flex;gap:8px;flex-wrap:wrap">${paper}${del}</div></div>${stList}`;
+            h+=`</div>`;
+           });
+           box.innerHTML=(h||`<div class="glass muted" style="text-align:center;font-weight:700">Приказов не найдено.</div>`)+(total>jLimit?`<button type="button" class="btn btn-soft btn-block" onclick="jLimit+=30;renderJournal()">Показать ещё (${total-jLimit})</button>`:"");
+          }
+          function ctrl(o,last){
+           const isBoss=me.role==="founder"||me.role==="chief",canT=(!o.utvAt&&o.id===last)||isBoss;
+           const te=canT?`<div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.85);padding:5px 10px;border-radius:var(--rp)"><span style="font-size:12px;font-weight:800">Время выдачи:</span><input type="time" id="ed-${o.id}" value="${hm(o.at)}" style="width:112px;padding:4px 8px;font-size:14px"><button type="button" class="btn btn-primary" style="padding:5px 12px;font-size:12px" onclick="updIssue(${o.id})" aria-label="Сохранить время">💾</button></div>`:"";
+           if(o.noObr){
+            const u=hm(o.utvAt||o.at+6e4);
+            return`<div class="ctrl row">${te}<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:13px;font-weight:800;color:#1e3a8a">«Утверждено» (+1 мин):</span><input type="time" id="uo-${o.id}" value="${u}" style="width:120px;padding:6px 10px"><button type="button" class="btn btn-success" onclick="apprNo(${o.id})">✅ Утвердить № ${esc(o.num)}</button></div></div>`;
+           }
+           const opts=o.stations.map(c=>`<option value="${esc(c)}" ${o.obrSt===c?"selected":""}>${esc(SN[c])}</option>`).join("");
+           const ob=hm(o.obr||o.at+6e4),ut=hm(o.utvAt||(o.obr||o.at+6e4)+6e4);
+           return`<div class="ctrl"><div class="row" style="margin-bottom:8px"><span style="font-size:13px;font-weight:800;color:#1e3a8a">⏱ «Обратно» и «Утверждено»:</span>${te}</div>
+            <div class="g4" style="align-items:end"><div><label class="lbl" for="os-${o.id}">Станция («Обратно»):</label><select id="os-${o.id}" style="padding:7px;font-size:13px">${opts}</select></div>
+            <div><label class="lbl" for="ot-${o.id}">Время «Обратно»:</label><input type="time" id="ot-${o.id}" value="${ob}" style="padding:7px;font-size:14px" oninput="obrInput(${o.id})"></div>
+            <div><label class="lbl" for="ut-${o.id}">«Утверждено» (+1 мин):</label><input type="time" id="ut-${o.id}" value="${ut}" style="padding:7px;font-size:14px"></div>
+            <div><button type="button" class="btn btn-success" style="width:100%;padding:9px" onclick="apprObr(${o.id})">✅ Утвердить</button></div></div></div>`;
+          }
+          function toggleDet(id){openDet.has(id)?openDet.delete(id):openDet.add(id);$("det-"+id).classList.toggle("hidden",!openDet.has(id))}
+          function obrInput(id){const v=$("ot-"+id).value;if(v){const o=S.orders[id];$("ut-"+id).value=hm(atAfter(v,o.at)+6e4)}}
+          function updIssue(id){
+           const o=S.orders[id];if(!o)return;
+           if(o.utvAt&&me.role!=="founder"&&me.role!=="chief"){toast("⚠️ Приказ утверждён — изменение заблокировано");return}
+           const v=$("ed-"+id).value;if(!v)return;
+           const t=atNear(v,o.at),fl=floorTs(id);
+           if(fl&&t<fl){toast(`⚠️ Время (${hm(t)}) раньше утверждения предыдущего приказа (${hm(fl)})`);beep(300,.4);return}
+           const old=hm(o.at);W("orders/"+id,{at:t},true);W(`orders/${id}/hist/${Date.now()}`,{who:dutyOf(),from:old,to:hm(t)});log(`Изменено время выдачи приказа № ${o.num}: ${old} ➔ ${hm(t)}`);toast(`✅ Время выдачи изменено на ${hm(t)}`);
+          }
+          function apprNo(id){
+           const o=S.orders[id];if(!o||(o.utvAt&&me.role!=="founder"&&me.role!=="chief"))return;
+           const v=$("uo-"+id).value;if(!v){toast("⚠️ Укажите время");return}
+           const t=atAfter(v,o.at);if(t-o.at>432e5){toast("⚠️ Время утверждения слишком далеко от выдачи");return}
+           W("orders/"+id,{utvAt:t},true);log(`Приказ № ${o.num} утверждён в ${hm(t)}`);beep(1000,.25);toast(`✅ Приказ № ${o.num} утверждён и заблокирован`);
+          }
+          function apprObr(id){
+           const o=S.orders[id];if(!o||(o.utvAt&&me.role!=="founder"&&me.role!=="chief"))return;
+           const st=$("os-"+id).value,a=$("ot-"+id).value,b=$("ut-"+id).value;
+           if(!a||!b){toast("⚠️ Укажите время «Обратно» и «Утверждено»");return}
+           const ta=atAfter(a,o.at);if(ta-o.at>432e5){toast("⚠️ Время «Обратно» слишком далеко от выдачи");return}
+           const tb=atAfter(b,ta);if(tb-ta>432e5){toast("⚠️ Время «Утверждено» слишком далеко от «Обратно»");return}
+           W("orders/"+id,{obrSt:st,obr:ta,utvAt:tb},true);
+           log(`Приказ № ${o.num}: «Обратно» ст. ${SN[st]} (${hm(ta)}), утверждён в ${hm(tb)}`);beep(1000,.25);toast(`✅ Приказ № ${o.num} утверждён (${hm(tb)})`);
+          }
+          function stConfirm(id){
+           const fam=me.name;
+           const o=S.orders[id];if(!o)return;
+           W(`orders/${id}/acks/${me.code}`,{by:fam,uid:me.uid,t:Date.now()});
+           log(`Станция «${SN[me.code]}» (${fam}) подтвердила приказ № ${o.num}`);beep(1000,.2);toast(`✅ Приказ № ${o.num} подтверждён`);
+          }
+          function togglePaper(id){const o=S.orders[id];if(o)W(`orders/${id}/paper`,!o.paper)}
+          function cancelOrder(id){
+           const o=S.orders[id];if(!o||o.canceled)return;
+           if(o.utvAt&&me.role!=="founder"&&me.role!=="chief"){toast("⚠️ Утверждённый приказ может отменить только старший ДЦХ или основатель");return}
+           ask(`Причина отмены приказа № ${o.num}:`,"",r=>{
+            if(!r||r.length<3){toast("⚠️ Укажите причину отмены (минимум 3 символа)");return}
+            W(`orders/${id}/cancel`,{reason:r,by:dutyOf()||me.name,at:Date.now()});
+            W(`orders/${id}/canceled`,true,true);
+            if(o.cat==="SHIFT_HANDOVER")toast(`⛔ Приказ № ${o.num} отменён. Фамилия дежурного в meta не изменена — оформите новый приём смены при необходимости.`);
+            else toast(`⛔ Приказ № ${o.num} отменён`);
+            log(`Отменён приказ № ${o.num}: ${r}`);
+           });
+          }
+          function printOrder(id){
+           const c=$("card-"+id);if(!c)return;c.classList.add("pt");
+           if(window.AndroidBridge&&window.AndroidBridge.printPage){window.AndroidBridge.printPage("Prikaz_"+id)}else{window.print()}
+           setTimeout(()=>c.classList.remove("pt"),1200);
+          }
+          async function delOrder(id){
+           const o=S.orders[id];if(!o)return;
+           const go=await askConfirm(o.draft?"Удаление заготовки":(`Удаление приказа № ${o.num}`+(o.utvAt?" (УТВЕРЖДЁН)":"")),o.draft?"Заготовка будет удалена безвозвратно.":"Приказ будет удалён безвозвратно. Отменить это действие нельзя.",o.draft?"Удалить":"Удалить приказ");
+           if(!go)return;
+           W("orders/"+id,null);log(`Удалена запись: ${o.draft?"заготовка":"приказ № "+o.num} (${o.subTitle||CAT_RU[o.cat]||o.cat})`);toast("🗑 Запись удалена");
+          }
+
+          function renderDrafts(){
+           const b=$("drafts-box");const ds=Object.values(S.orders).filter(o=>o.draft&&(me.role==="founder"||me.role==="chief"||o.by===me.login||o.by===me.uid)).sort((a,b)=>b.created-a.created);
+           b.innerHTML=ds.length?ds.map(d=>`<div style="margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(148,163,184,.35)">${stamp(d)}
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;flex-wrap:wrap"><button type="button" class="btn btn-danger" onclick="delOrder(${d.id})">🗑 Удалить</button><button type="button" class="btn btn-soft" onclick="editDraft(${d.id})">✏️ Изменить</button><button type="button" class="btn btn-success" onclick="publishDraft(${d.id})">🚀 Выдать как № ${S.meta.next}</button></div></div>`).join(""):`<div class="muted" style="padding:16px;text-align:center;font-weight:700">Нет сохранённых заготовок.</div>`;
+          }
+          function editDraft(id){const o=S.orders[id];if(o)openBuilder(o.cat,o)}
+          async function publishDraft(id){
+           const o=S.orders[id];if(!o||PB){if(PB)toast("⏳ Уже идёт выдача…");return}
+           const er=validate(o);if(er){toast("⚠️ "+er);return}
+           const doPub=async()=>{
+            PB=true;toast("⏳ Регистрация приказа…");
+            try{
+             const n=await claimNum();
+             const fl=floorTs(id);let t=Math.floor(Date.now()/6e4)*6e4;if(fl&&t<fl)t=fl;
+             const f=Object.assign({},o.f,{"b-time":hm(t)});
+             const meta={};
+             if(o.cat==="SHIFT_HANDOVER"){meta.activeDch=f["sh-accepted"]||S.meta.activeDch;meta.prevDch=f["sh-handed"]||S.meta.prevDch}
+             W("orders/"+id,{draft:false,num:n,at:t,f,dch:dutyOf(),by:me.uid,created:Date.now()},true);if(Object.keys(meta).length)W("meta",meta,true);
+             log(`Выдана заготовка как приказ № ${n} в ${hm(t)}`);beep(880,.35);openTab("journal");toast(`🚀 Приказ № ${n} выдан`);
+            }catch(e){console.error(e);toast("⚠️ Ошибка выдачи: "+(e.message||"сеть"));beep(300,.3)}
+            finally{PB=false}
+           };
+           if(DANGER_CATS.includes(o.cat))confirmDanger("Подтверждение опасной операции",DANGER_TEXT[o.cat]+" Нажмите «Подтвердить», чтобы выдать приказ.",doPub);
+           else doPub();
+          }
+          function renderLogs(){
+           const q=($("logs-q").value||"").trim().toLowerCase();
+           const rows=Object.values(S.logs).sort((a,b)=>b.t-a.t).filter(l=>!q||`${dmy(l.t)} ${hm(l.t)} ${l.who} ${l.act}`.toLowerCase().includes(q)).slice(0,300);
+           $("logs-body").innerHTML=rows.map(l=>`<tr><td style="white-space:nowrap;font-weight:800">${dmy(l.t)} ${hm(l.t)}</td><td style="font-weight:800;color:#1e3a8a">${esc(l.who)}</td><td>${esc(l.act)}</td></tr>`).join("");
+          }
+          function renderAdmin(){
+           const ns=$("na-st");if(!ns.options.length)STN.forEach(s=>ns.add(new Option(s.full,s.code)));
+           if(document.activeElement!==$("adm-num"))$("adm-num").value=S.meta.next;
+           const rl={station:"Станция",dch:"ДЦХ",chief:"Старший ДЦХ",founder:"Основатель"};
+           $("acc-list").innerHTML="<table><thead><tr><th>Сотрудник</th><th>Роль</th><th>Станция</th><th></th></tr></thead><tbody>"+Object.entries(S.users).map(([uid,u])=>`<tr><td><b>${esc(u.name)}</b><br><span class="muted">${esc(u.email)}</span></td><td>${esc(rl[u.role]||u.role)}</td><td>${esc(SN[u.code]||"—")}</td><td style="white-space:nowrap"><button type="button" class="btn btn-soft btn-sm" onclick="admToggle('${esc(uid)}')">${u.active===false?"Включить":"Отключить"}</button> <button type="button" class="btn btn-soft btn-sm" onclick="admReset('${esc(uid)}')">✉ Сброс пароля</button></td></tr>`).join("")+"</tbody></table>";
+           $("tpl-list").innerHTML=CATS.flatMap(c=>(S.subs[c]||[]).filter(x=>String(x.id).startsWith("custom_")).map(x=>`<div class="row" style="padding:6px 0;border-bottom:1px solid rgba(148,163,184,.3)"><span><b>${esc(x.title)}</b> <span class="muted">(${CAT_RU[c]||c})</span></span><button type="button" class="btn btn-danger btn-sm" onclick="admDelTpl('${c}','${esc(x.id)}')" aria-label="Удалить шаблон">🗑</button></div>`)).join("");
+          }
+          function admDelTpl(c,id){W("subs/"+c,(S.subs[c]||[]).filter(x=>x.id!==id));log("Удалён пользовательский шаблон");toast("🗑 Шаблон удалён")}
+          async function admCreate(){
+           const em=$("na-email").value.trim(),pw=$("na-pass").value,nm=$("na-name").value.trim(),role=$("na-role").value,code=$("na-st").value;
+           if(!em||pw.length<6||!nm){toast("⚠️ Заполните электронную почту, пароль (от 6 символов) и фамилию");return}
+           try{
+            const j=await authCall("signUp",{email:em,password:pw,returnSecureToken:false});
+            const prof={role,name:nm,email:em,active:true};if(role==="station")prof.code=code;
+            W("users/"+j.localId,prof);log(`Создан аккаунт: ${nm} (${role})`);
+            ["na-email","na-pass","na-name"].forEach(i=>$(i).value="");toast("✅ Аккаунт создан");
+           }catch(e){toast("⚠️ "+(/EMAIL_EXISTS/.test(e.message)?"Такой адрес уже существует":e.message))}
+          }
+          function admToggle(uid){const u=S.users[uid];if(!u||uid===me.uid)return;W(`users/${uid}/active`,u.active===false);log(`${u.active===false?"Включён":"Отключён"} аккаунт: ${u.name}`)}
+          async function admReset(uid){const u=S.users[uid];if(!u)return;try{await authCall("sendOobCode",{requestType:"PASSWORD_RESET",email:u.email});toast("✉️ Письмо отправлено: "+u.email)}catch(e){toast("⚠️ "+e.message)}}
+          function admAddTpl(){
+           const c=$("adm-cat").value,t=$("adm-title").value.trim(),b=$("adm-body").value.trim();
+           if(!t||!b){toast("⚠️ Заполните название и текст");return}
+           const arr=(S.subs[c]||[]).concat([{id:"custom_"+Date.now(),title:t,text:b}]);
+           W("subs/"+c,arr);log(`Добавлен шаблон «${t}»`);$("adm-title").value="";$("adm-body").value="";toast("➕ Шаблон добавлен");
+          }
+          async function admSaveNum(){
+           if(me.role!=="founder"){toast("⛔ Только основатель может задавать номер");return}
+           const n=parseInt($("adm-num").value,10);
+           if(!n||n<1||n>999999){toast("⚠️ Номер должен быть от 1 до 999999");return}
+           if(n<S.meta.next){
+            const go=await askConfirm("Изменение нумерации",`Новый номер (${n}) меньше текущего (${S.meta.next}). Продолжить?`,"Продолжить");
+            if(!go)return;
+           }
+           W("meta",{next:n},true);log(`Установлен следующий номер приказа: № ${n}`);toast(`✅ Следующий номер: № ${n}`);
+          }
+          async function cleanup(manual){
+           if(me.role!=="founder")return;
+           if(manual){
+            const go=await askConfirm("Очистка старых приказов","Удалить утверждённые приказы старше 5 дней? Сначала скачайте архив CSV — это действие необратимо.","Удалить");
+            if(!go)return;
+           }
+           const lim=Date.now()-5*864e5;let n=0;
+           Object.values(S.orders).forEach(o=>{if(!o.draft&&o.utvAt&&o.at<lim){W("orders/"+o.id,null);n++}});
+           Object.entries(S.logs).sort((a,b)=>b[1].t-a[1].t).slice(300).forEach(([k])=>W("logs/"+k,null));
+           if(n)log(`Очистка 5 дней: удалено утверждённых приказов — ${n}`);
+           if(manual)toast(`🧹 Удалено: ${n}`);
+          }
+          function saveCsvFile(filename,csv){
+           if(window.AndroidBridge&&window.AndroidBridge.saveCsv){
+            window.AndroidBridge.saveCsv(filename,csv);
+            toast("📥 Сохранено в Загрузки: "+filename);
+            return;
+           }
+           const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8;"}));
+           a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+          }
+          function exportCSV(){
+           const q=v=>{let s=String(v??"-");if(/^[=+\-@\t\r]/.test(s))s="'"+s;return`"${s.replace(/"/g,'""')}"`};
+           const d=t=>t?new Date(t).toLocaleString("ru-RU"):"-";
+           let csv="\uFEFFПриказ №;Выдан;Обратно станция;Обратно время;Утверждено;ДЦХ;Раздел;Станции\n";
+           pubs().forEach(o=>{csv+=[o.num,d(o.at),SN[o.obrSt]||"-",d(o.obr),d(o.utvAt),o.dch,CAT_RU[o.cat]||o.cat,o.stations.map(c=>SN[c]).join(", ")].map(q).join(";")+"\n"});
+           saveCsvFile(`archive_chilanzar_${new Date().toISOString().slice(0,10)}.csv`,csv);
+          }
+
+          function reportList(){
+           const shift=$("rp-shift").value,st=$("rp-station").value,ct=$("rp-cat").value,dch=$("rp-dch").value;
+           const from=$("rp-from").value?new Date($("rp-from").value+"T00:00:00").getTime():null;
+           const to=$("rp-to").value?new Date($("rp-to").value+"T23:59:59").getTime():null;
+           return pubs().filter(o=>{
+            if(shift!=="all"){const h=new Date(o.at).getHours();const day=h>=8&&h<20;if(shift==="day"&&!day)return false;if(shift==="night"&&day)return false}
+            if(st!=="all"&&!o.stations.includes(st))return false;
+            if(ct!=="all"&&o.cat!==ct)return false;
+            if(dch!=="all"&&o.dch!==dch)return false;
+            if(from&&o.at<from)return false;
+            if(to&&o.at>to)return false;
+            return true;
+           });
+          }
+          function initReportFilters(){
+           const st=$("rp-station");if(!st.options.length){st.add(new Option("Все станции","all"));STN.forEach(s=>st.add(new Option(s.full,s.code)))}
+           const ct=$("rp-cat");if(!ct.options.length){ct.add(new Option("Все типы","all"));CATS.forEach(c=>ct.add(new Option(CAT_RU[c]||c,c)))}
+           const dch=$("rp-dch");const names=[...new Set(pubs().map(o=>o.dch).filter(Boolean))].sort();
+           const cur=dch.value;dch.innerHTML="";dch.add(new Option("Все сотрудники","all"));names.forEach(n=>dch.add(new Option(n,n)));
+           if(cur&&[...dch.options].some(o=>o.value===cur))dch.value=cur;
+          }
+          function renderReports(){
+           initReportFilters();
+           const list=reportList();
+           const cnt=k=>list.filter(o=>statusOf(o).k===k).length;
+           $("rp-stats").innerHTML=[
+            ["Всего приказов",list.length,"var(--primary)"],
+            ["На утверждении",cnt("pending"),"var(--warning)"],
+            ["Выдано",cnt("issued"),"var(--primary)"],
+            ["Внесено в журнал",cnt("journal"),"var(--success)"],
+            ["Отменено",cnt("canceled"),"var(--danger)"]
+           ].map(([t,v,c])=>`<div class="stat" style="border-left-color:${c}"><b>${v}</b><span>${t}</span></div>`).join("");
+           const rows=list.slice().reverse();
+           $("rp-body").innerHTML=rows.map(o=>{const s=statusOf(o);return`<tr><td style="font-weight:900">${o.num}</td><td style="white-space:nowrap">${dmy(o.at)} ${hm(o.at)}</td><td>${esc(CAT_RU[o.cat]||o.cat)}</td><td>${esc(o.dch||"—")}</td><td>${esc(o.stations.map(c=>SN[c]).join(", ")||"—")}</td><td><span class="st ${s.c}">${s.t}</span></td></tr>`}).join("");
+           show("rp-empty",!rows.length);
+          }
+          function exportReportCSV(){
+           const list=reportList();
+           const q=v=>{let s=String(v??"-");if(/^[=+\-@\t\r]/.test(s))s="'"+s;return`"${s.replace(/"/g,'""')}"`};
+           const d=t=>t?new Date(t).toLocaleString("ru-RU"):"-";
+           let csv="\uFEFF№;Дата и время;Тип приказа;ДЦХ;Станции;Статус;Обратно;Утверждено\n";
+           list.forEach(o=>{const s=statusOf(o);csv+=[o.num,d(o.at),CAT_RU[o.cat]||o.cat,o.dch||"-",o.stations.map(c=>SN[c]).join(", ")||"-",s.t,d(o.obr),d(o.utvAt)].map(q).join(";")+"\n"});
+           saveCsvFile(`otchet_chilanzar_${new Date().toISOString().slice(0,10)}.csv`,csv);
+          }
+
+          net(true);
+          (async()=>{try{
+           const sv=JSON.parse(localStorage.getItem(AK)||"null"),pf=JSON.parse(localStorage.getItem(LSP)||"null");
+           if(!sv||!pf)return;
+           TOK={ref:sv.ref,uid:pf.uid,exp:0};
+           try{await refresh()}catch(e){if(e.auth){clearSess();TOK=null;return}}
+           enter(mk(pf),false);
+          }catch(e){}})();
+          </script>
+          </body>
+          </html>
+          EOF_INDEX_HTML
+          sed -i 's/^          //' app/src/main/assets/index.html
+
+      - name: Configure Native Android MainActivity Engine
+        run: |
+          cat << 'EOF_MAIN_KT' > app/src/main/java/uz/metro/chilonzor/dcxduty/MainActivity.kt
+          package uz.metro.chilonzor.dcxduty
+
+          import android.annotation.SuppressLint
+          import android.content.ContentValues
+          import android.content.Context
+          import android.graphics.Color
+          import android.os.Build
+          import android.os.Bundle
+          import android.os.Environment
+          import android.os.VibrationEffect
+          import android.os.Vibrator
+          import android.print.PrintAttributes
+          import android.print.PrintManager
+          import android.provider.MediaStore
+          import android.view.View
+          import android.view.WindowManager
+          import android.webkit.JavascriptInterface
+          import android.webkit.WebChromeClient
+          import android.webkit.WebSettings
+          import android.webkit.WebView
+          import android.webkit.WebViewClient
+          import androidx.activity.ComponentActivity
+          import androidx.activity.OnBackPressedCallback
+          import java.io.File
+
+          class MainActivity : ComponentActivity() {
+              private lateinit var webView: WebView
+
+              @SuppressLint("SetJavaScriptEnabled")
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+
+                  window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                  window.statusBarColor = Color.parseColor("#0f172a")
+                  window.navigationBarColor = Color.parseColor("#020617")
+
+                  webView = WebView(this).apply {
+                      setBackgroundColor(Color.parseColor("#0f172a"))
+                      setLayerType(View.LAYER_TYPE_HARDWARE, null)
+                      settings.apply {
+                          javaScriptEnabled = true
+                          domStorageEnabled = true
+                          databaseEnabled = true
+                          allowFileAccess = true
+                          allowContentAccess = true
+                          @Suppress("DEPRECATION")
+                          allowUniversalAccessFromFileURLs = true
+                          @Suppress("DEPRECATION")
+                          allowFileAccessFromFileURLs = true
+                          mediaPlaybackRequiresUserGesture = false
+                          cacheMode = WebSettings.LOAD_DEFAULT
+                          mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                          setSupportZoom(false)
+                      }
+                      webViewClient = WebViewClient()
+                      webChromeClient = WebChromeClient()
+                      addJavascriptInterface(AndroidBridge(), "AndroidBridge")
+                      loadUrl("file:///android_asset/index.html")
+                  }
+
+                  setContentView(webView)
+
+                  onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+                      override fun handleOnBackPressed() {
+                          if (webView.canGoBack()) {
+                              webView.goBack()
+                          }
+                      }
+                  })
+              }
+
+              inner class AndroidBridge {
+                  @JavascriptInterface
+                  fun printPage(jobName: String) {
+                      runOnUiThread {
+                          val pm = getSystemService(Context.PRINT_SERVICE) as? PrintManager ?: return@runOnUiThread
+                          val adapter = webView.createPrintDocumentAdapter(jobName)
+                          pm.print(jobName, adapter, PrintAttributes.Builder().build())
+                      }
+                  }
+
+                  @JavascriptInterface
+                  fun saveCsv(fileName: String, content: String) {
+                      try {
+                          val bytes = content.toByteArray(Charsets.UTF_8)
+                          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                              val values = ContentValues().apply {
+                                  put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                                  put(MediaStore.Downloads.MIME_TYPE, "text/csv")
+                                  put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                              }
+                              val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+                              if (uri != null) {
+                                  contentResolver.openOutputStream(uri)?.use { it.write(bytes) }
+                              }
+                          } else {
+                              @Suppress("DEPRECATION")
+                              val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                              File(dir, fileName).writeBytes(bytes)
+                          }
+                      } catch (_: Exception) {}
+                  }
+
+                  @JavascriptInterface
+                  fun vibrate() {
+                      try {
+                          val v = getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator ?: return
+                          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                              v.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 300, 150, 300), -1))
+                          } else {
+                              @Suppress("DEPRECATION")
+                              v.vibrate(500)
+                          }
+                      } catch (_: Exception) {}
+                  }
+              }
+          }
+          EOF_MAIN_KT
+          sed -i 's/^          //' app/src/main/java/uz/metro/chilonzor/dcxduty/MainActivity.kt
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -29,14 +1232,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
 
       - name: Upload Ready APK
         uses: actions/upload-artifact@v4
         with:
-          name: dcx-chilonzor-apk
+          name: dcx-chilonzor-v8-apk
           path: app/build/outputs/apk/debug/app-debug.apk
