@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280, user-scalable=no">
+  <title>АРМ ДЦХ — Журнал ДУ-58 Метро (Чиланзарская линия)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="net" class="net-bar net-online" role="status">🟢 ОНЛАЙН — СИНХРОНИЗАЦИЯ С СЕРВЕРОМ</div>
+<div id="toast" class="hidden" role="alert"></div>
+
+<!-- Simple Input Modal -->
+<div id="modal" class="hidden">
+  <div class="modal-card" style="max-width:400px">
+    <h3 id="m-title" style="margin-bottom:12px"></h3>
+    <input id="m-inp" class="inp" type="text">
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+      <button type="button" class="btn btn-soft" id="m-no">Отмена</button>
+      <button type="button" class="btn btn-primary" id="m-ok">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Danger / Confirm Modal -->
+<div id="confirm" class="hidden">
+  <div class="modal-card" style="max-width:460px">
+    <h3 id="c-title" style="margin-bottom:10px;color:#991b1b"></h3>
+    <div id="c-body"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+      <button type="button" class="btn btn-soft" id="c-no">Отмена</button>
+      <button type="button" class="btn btn-danger" id="c-ok">Подтвердить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Secondary Overlay Modal (Drafts / Reports / Logs / Admin) -->
+<div id="overlay-modal" class="hidden">
+  <div class="modal-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #e2e8f0">
+      <h3 id="ov-title" style="font-size:18px;color:#0f172a"></h3>
+      <button type="button" class="btn btn-soft btn-xs" onclick="closeOverlay()">✕ Закрыть</button>
+    </div>
+    <div id="ov-content"></div>
+  </div>
+</div>
+
+<!-- ================= LOGIN VIEW ================= -->
+<div id="view-login" class="login-wrap">
+  <div class="login-card">
+    <h2>🚇 ЧИЛАНЗАРСКАЯ ЛИНИЯ</h2>
+    <p class="sub">Электронный журнал диспетчерских приказов формы ДУ-58 Метро</p>
+    <div id="login-err" class="hidden" style="background:#fee2e2;color:#991b1b;padding:10px;border-radius:10px;font-weight:800;font-size:13px;margin-bottom:14px;text-align:center"></div>
+    <div class="field">
+      <label for="inp-login">Электронная почта:</label>
+      <input id="inp-login" class="inp" type="email" autocomplete="username" placeholder="dch@metro.uz">
+    </div>
+    <div class="field">
+      <label for="inp-pass">Пароль:</label>
+      <input id="inp-pass" class="inp" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button type="button" class="btn btn-primary btn-block" onclick="doLogin()">Войти в журнал ДУ-58</button>
+    <button type="button" class="btn btn-soft btn-block" style="margin-top:8px" onclick="resetPass()">Забыли пароль?</button>
+  </div>
+</div>
+
+<!-- ================= MAIN APP (20% LEFT / 80% RIGHT) ================= -->
+<div id="view-app" class="hidden">
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-size:15.5px;font-weight:900;letter-spacing:0.4px">🚇 ЧИЛАНЗАРСКАЯ ЛИНИЯ • ЖУРНАЛ ДУ-58 МЕТРО</span>
+      <span id="role-pill" class="pill"></span>
+      <span id="top-shift-info" style="font-size:12px;color:#cbd5e1;font-weight:700"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span id="user-name" style="font-size:13px;font-weight:800;color:#93c5fd"></span>
+      <button type="button" class="btn btn-soft btn-xs" onclick="window.print()">🖨 Печать книги</button>
+      <button type="button" id="btn-logout" class="btn btn-danger btn-xs" onclick="doLogout()">Выйти</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <!-- 20% LEFT PANEL: BARCHA SHABLONLAR RO'YXATI -->
+    <aside class="sidebar-20" id="sidebar-panel">
+      <div class="sb-header">
+        <span>📋 Шаблоны штампов (20%)</span>
+        <span id="tpl-count-badge" style="color:#fde047">19 шт.</span>
+      </div>
+      <div class="sb-shift-box">
+        <div id="sb-dch">ДЦХ: <b>—</b></div>
+        <div id="sb-next" style="margin-top:2px">Следующий приказ: <b>№ —</b></div>
+      </div>
+
+      <div class="sb-search-wrap">
+        <input id="tpl-filter-inp" class="sb-search" type="text" placeholder="🔍 Фильтр штампов (№1, №14, ЭЧЦ, АВС...)" oninput="renderSidebarTemplates()">
+      </div>
+
+      <div class="tpl-list" id="tpl-buttons-box"></div>
+
+      <div class="sb-footer">
+        <button type="button" id="sb-btn-drafts" class="btn btn-soft btn-xs" onclick="openOverlay('drafts')">
+          📁 Заготовки (<span id="drafts-cnt">0</span>)
+        </button>
+        <button type="button" id="sb-btn-reports" class="btn btn-soft btn-xs" onclick="openOverlay('reports')">
+          📊 Отчёты CSV
+        </button>
+        <button type="button" id="sb-btn-logs" class="btn btn-soft btn-xs hidden" onclick="openOverlay('logs')">
+          📜 Логи
+        </button>
+        <button type="button" id="sb-btn-admin" class="btn btn-soft btn-xs hidden" onclick="openOverlay('admin')">
+          🛠 Админ
+        </button>
+      </div>
+    </aside>
+
+    <!-- 80% RIGHT MAIN PANEL: 1-TO-1 DU-58 JOURNAL -->
+    <main class="journal-80" id="journal-scroll">
+      <div class="journal-toolbar">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <input id="feed-q" class="inp" placeholder="🔍 Поиск в книге: № приказа, дата, поезд, станция..." oninput="renderJournal()" style="width:280px;padding:6px 12px;font-size:13px">
+          <select id="feed-filter" class="inp" onchange="renderJournal()" style="width:auto;padding:6px 12px;font-size:13px">
+            <option value="all">Все записи книги ДУ-58</option>
+            <option value="unapproved">⏳ Ожидают утверждения</option>
+            <option value="uncopied">✍️ Не перенесены в бумажный журнал</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button type="button" class="btn btn-primary btn-xs" onclick="scrollToBottom()">⬇ В конец журнала (последние приказы)</button>
+        </div>
+      </div>
+
+      <!-- 1-TO-1 DU-58 METRO SHEET -->
+      <div class="du58-sheet">
+        <div class="du58-top-label">ДУ-58 Метро</div>
+
+        <table class="du58-table">
+          <colgroup>
+            <col class="col-date">
+            <col class="col-num">
+            <col class="col-body">
+            <col class="col-obr">
+            <col class="col-utv-t">
+            <col class="col-utv-d">
+            <col class="col-acks">
+          </colgroup>
+          <thead>
+            <tr>
+              <th rowspan="2">Дата,<br>время</th>
+              <th rowspan="2">№<br>приказов</th>
+              <th rowspan="2">Адрес и содержание</th>
+              <th rowspan="2">Станц. и<br>во обрат.<br>контр.<br>передачи<br>(час. мин.)</th>
+              <th colspan="2">Утверждение</th>
+              <th rowspan="2">Фамилия лиц<br>принявших<br>приказ</th>
+            </tr>
+            <tr>
+              <th>время<br>утверж.<br>(ч. м.)</th>
+              <th>фамилия<br>диспет-<br>чера</th>
+            </tr>
+          </thead>
+          <tbody id="du58-tbody"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Подключение модулей по порядку -->
+<script src="config.js"></script>
+<script src="stamps.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
