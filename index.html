@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280, user-scalable=no">
+  <title>АРМ ДЦХ — Журнал ДУ-58 Метро (Чиланзарская линия)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="toast" class="hidden" role="alert"></div>
+
+<!-- Модал ввода причины отмены -->
+<div id="modal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="m-title">
+  <div class="modal-card" style="max-width:400px">
+    <h3 id="m-title" style="margin-bottom:12px"></h3>
+    <input id="m-inp" class="inp" type="text">
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+      <button type="button" class="btn btn-soft" id="m-no">Отмена</button>
+      <button type="button" class="btn btn-primary" id="m-ok">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модал подтверждения опасной операции -->
+<div id="confirm" class="hidden" role="alertdialog" aria-modal="true" aria-labelledby="c-title">
+  <div class="modal-card" style="max-width:460px">
+    <h3 id="c-title" style="margin-bottom:10px;color:#991b1b"></h3>
+    <div id="c-body"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+      <button type="button" class="btn btn-soft" id="c-no">Отмена</button>
+      <button type="button" class="btn btn-danger" id="c-ok">Подтвердить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ПРОСТОРНОЕ ОКНО ОФОРМЛЕНИЯ ШТАМПА -->
+<div id="stamp-modal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="sm-title">
+  <div class="stamp-modal-card">
+    <div class="sm-header">
+      <div id="sm-title" style="font-size:15px;font-weight:900">Оформление штампа</div>
+      <button type="button" class="btn btn-soft btn-xs" onclick="closeLiveStamp()">✕ Закрыть</button>
+    </div>
+    <div class="sm-body" id="sm-body"></div>
+    <div class="sm-footer">
+      <button type="button" class="btn btn-soft" onclick="closeLiveStamp()">Отмена</button>
+      <div style="display:flex;gap:10px">
+        <button type="button" class="btn btn-warning" onclick="saveLiveDraft()">📁 В заготовки</button>
+        <button type="button" class="btn btn-success" id="sm-pub-btn" onclick="publishLiveStamp()">🚀 Выдать приказ в книгу ДУ-58</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ОКНО СТАТУСА И ДЕЙСТВИЙ ПО ПРИКАЗУ (ПО КЛИКУ НА СТРОКУ ЖУРНАЛА) -->
+<div id="order-act-modal" class="hidden" role="dialog" aria-modal="true" onclick="if(event.target===this)closeOrderActions()">
+  <div class="modal-card" style="max-width:680px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #e2e8f0">
+      <h3 id="oa-title" style="font-size:16px;color:#0f172a">Приказ №</h3>
+      <button type="button" class="btn btn-soft btn-xs" onclick="closeOrderActions()">✕ Закрыть</button>
+    </div>
+    <div id="oa-body"></div>
+  </div>
+</div>
+
+<!-- Дополнительное окно (Заготовки / Отчёты / Логи / Админ) -->
+<div id="overlay-modal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="ov-title" onclick="if(event.target===this)closeOverlay()">
+  <div class="modal-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #e2e8f0">
+      <h3 id="ov-title" style="font-size:18px;color:#0f172a"></h3>
+      <button type="button" class="btn btn-soft btn-xs" onclick="closeOverlay()">✕ Закрыть</button>
+    </div>
+    <div id="ov-content"></div>
+  </div>
+</div>
+
+<!-- ================= ЭКРАН ВХОДА ================= -->
+<div id="view-login" class="login-wrap">
+  <div class="login-card">
+    <h2>🚇 ЧИЛАНЗАРСКАЯ ЛИНИЯ</h2>
+    <p class="sub">Электронный журнал диспетчерских приказов формы ДУ-58 Метро</p>
+    <div id="login-err" class="hidden" style="background:#fee2e2;color:#991b1b;padding:10px;border-radius:10px;font-weight:800;font-size:13px;margin-bottom:14px;text-align:center"></div>
+    <div class="field">
+      <label for="inp-login">Электронная почта:</label>
+      <input id="inp-login" class="inp" type="email" autocomplete="username" placeholder="dch@metro.uz">
+    </div>
+    <div class="field">
+      <label for="inp-pass">Пароль:</label>
+      <input id="inp-pass" class="inp" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button type="button" class="btn btn-primary btn-block" onclick="doLogin()">Войти в журнал ДУ-58</button>
+    <button type="button" class="btn btn-soft btn-block" style="margin-top:8px" onclick="resetPass()">Забыли пароль?</button>
+  </div>
+</div>
+
+<!-- ================= ОСНОВНОЕ ПРИЛОЖЕНИЕ (20% СЛЕВА / 80% СПРАВА) ================= -->
+<div id="view-app" class="hidden">
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span id="net-dot" class="net-dot" title="Онлайн"></span>
+      <span style="font-size:14px;font-weight:900;letter-spacing:0.3px">ЧИЛАНЗАРСКАЯ ЛИНИЯ • ДУ-58</span>
+      <span id="role-pill" class="pill"></span>
+      <span id="top-shift-info" style="font-size:11.5px;color:#94a3b8;font-weight:700"></span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:6px">
+      <input id="feed-q" aria-label="Поиск по журналу" class="top-search" placeholder="🔍 Поиск (№, дата, поезд...)" oninput="renderJournal()">
+      <select id="feed-filter" aria-label="Фильтр приказов" class="top-filter" onchange="renderJournal()">
+        <option value="all">Все приказы</option>
+        <option value="unapproved">⏳ Не утверждённые</option>
+        <option value="uncopied">✍️ Не в бум. книге</option>
+      </select>
+      <button type="button" class="btn btn-primary btn-xs" onclick="scrollToBottom(true)" title="В конец журнала">⬇ Вниз</button>
+      <span id="user-name" style="font-size:12px;font-weight:800;color:#93c5fd;margin-left:4px"></span>
+      <button type="button" class="btn btn-primary btn-xs" onclick="checkGitHubOta()" title="Обновить из GitHub">🔄</button>
+      <button type="button" class="btn btn-soft btn-xs" onclick="window.print()" title="Печать книги">🖨</button>
+      <button type="button" id="btn-logout" class="btn btn-danger btn-xs" onclick="doLogout()">Выйти</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <!-- 20% ЛЕВАЯ ПАНЕЛЬ: КОМПАКТНЫЕ КНОПКИ ШАБЛОНОВ -->
+    <aside class="sidebar-20" id="sidebar-panel">
+      <div class="sb-shift-box">
+        <span id="sb-dch">ДЦХ: <b>—</b></span>
+        <span id="sb-next">След: <b>№ —</b></span>
+      </div>
+
+      <div class="sb-search-wrap">
+        <input id="tpl-filter-inp" aria-label="Фильтр штампов" class="sb-search" type="text" placeholder="🔍 Быстрый фильтр штампов..." oninput="renderSidebarTemplates()">
+      </div>
+
+      <div class="tpl-list" id="tpl-buttons-box"></div>
+
+      <div class="sb-footer">
+        <button type="button" id="sb-btn-drafts" class="btn btn-soft btn-xs" onclick="openOverlay('drafts')">
+          📁 Заготовки (<span id="drafts-cnt">0</span>)
+        </button>
+        <button type="button" id="sb-btn-reports" class="btn btn-soft btn-xs" onclick="openOverlay('reports')">
+          📊 Отчёты
+        </button>
+        <button type="button" id="sb-btn-logs" class="btn btn-soft btn-xs hidden" onclick="openOverlay('logs')">
+          📜 Логи
+        </button>
+        <button type="button" id="sb-btn-admin" class="btn btn-soft btn-xs hidden" onclick="openOverlay('admin')">
+          🛠 Админ
+        </button>
+      </div>
+    </aside>
+
+    <!-- 80% ПРАВАЯ ПАНЕЛЬ: ЧИСТЫЙ ЖУРНАЛ ДУ-58 МЕТРО 1:1 -->
+    <main class="journal-80" id="journal-scroll">
+      <div class="du58-sheet">
+        <div class="du58-top-label">ДУ-58 Метро</div>
+
+        <table class="du58-table">
+          <colgroup>
+            <col class="col-date">
+            <col class="col-num">
+            <col class="col-body">
+            <col class="col-obr">
+            <col class="col-utv-t">
+            <col class="col-utv-d">
+            <col class="col-acks">
+          </colgroup>
+          <thead>
+            <tr>
+              <th rowspan="2">Дата,<br>время</th>
+              <th rowspan="2">№<br>приказов</th>
+              <th rowspan="2">Адрес и содержание</th>
+              <th rowspan="2">Станц. и<br>во обрат.<br>контр.<br>передачи<br>(час. мин.)</th>
+              <th colspan="2">Утверждение</th>
+              <th rowspan="2">Фамилия лиц<br>принявших<br>приказ</th>
+            </tr>
+            <tr>
+              <th>время<br>утверж.<br>(ч. м.)</th>
+              <th>фамилия<br>диспет-<br>чера</th>
+            </tr>
+          </thead>
+          <tbody id="du58-tbody"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="stamps.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

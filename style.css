@@ -701,3 +701,72 @@ body {
     max-width: 100% !important;
   }
 }
+
+/* ==========================================================================
+   ДОПОЛНЕНИЕ: группы штампов, фокус, контраст, анимация окон
+   ========================================================================== */
+
+/* Группы в левой панели: заголовок в обычном регистре, контрастный цвет на тёмном фоне */
+.tpl-group-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tpl-group-wrap + .tpl-group-wrap {
+  margin-top: 6px;
+}
+.tpl-group-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 4px 2px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #94a3b8;
+}
+.tpl-group-label span {
+  color: #64748b;
+  font-weight: 700;
+}
+.tpl-empty {
+  padding: 16px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-align: center;
+}
+
+/* Клавиатурный фокус: видно при навигации Tab, не мешает касанию */
+.btn:focus-visible,
+.tpl-btn:focus-visible,
+.inp:focus-visible,
+.top-search:focus-visible,
+.top-filter:focus-visible,
+.sb-search:focus-visible,
+.s-word:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+/* Неутверждённый приказ: цветная полоса слева вместо размытого фона */
+.du58-row.unapproved-row > td:first-child {
+  box-shadow: inset 4px 0 0 #f59e0b;
+}
+
+/* Одно короткое появление окна — реакция на действие пользователя */
+.modal-card,
+.stamp-modal-card {
+  animation: du58-pop 0.18s ease-out;
+}
+@keyframes du58-pop {
+  from { opacity: 0; transform: translateY(6px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Уважаем настройку «уменьшить движение» в системе */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
